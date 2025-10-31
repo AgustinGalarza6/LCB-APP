@@ -5,6 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LCB Club</title>
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnkJEfw_9DRJNEVhdGqc6QiX7w09q7iwA",
+            authDomain: "lcb-cancionero.firebaseapp.com",
+            projectId: "lcb-cancionero",
+            storageBucket: "lcb-cancionero.firebasestorage.app",
+            messagingSenderId: "161131745325",
+            appId: "1:161131745325:web:643bf96e23107d8e8628a4"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Hacer disponible globalmente
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+    </script>
 </head>
 <body>
     <!-- Header -->
@@ -109,6 +134,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>

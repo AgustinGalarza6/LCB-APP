@@ -1,8 +1,19 @@
+// === IMPORTS DE FIREBASE ===
+import { 
+    obtenerCanciones, 
+    agregarCancionFirestore, 
+    actualizarCancionFirestore, 
+    eliminarCancionFirestore,
+    escucharCambiosCanciones,
+    migrarLocalStorageAFirestore
+} from './firebase-db.js';
+
 // === ESTADO DE LA APLICACIÓN ===
 let canciones = [];
 let cancionEditando = null;
 let cancionActual = null;
 let transposicion = 0;
+let unsubscribeListener = null;
 
 // === ELEMENTOS DEL DOM ===
 const elementos = {
@@ -40,17 +51,33 @@ const elementos = {
     btnTransposeReset: document.getElementById('btnTransposeReset')
 };
 
-// === FUNCIONES DE LOCALSTORAGE ===
-function cargarCanciones() {
-    const cancionesGuardadas = localStorage.getItem('canciones');
-    if (cancionesGuardadas) {
-        canciones = JSON.parse(cancionesGuardadas);
+// === FUNCIONES DE FIREBASE ===
+async function cargarCanciones() {
+    try {
+        // Mostrar indicador de carga si quieres
+        canciones = await obtenerCanciones();
+        renderizarCanciones();
+        
+        // Iniciar listener de cambios en tiempo real
+        if (unsubscribeListener) {
+            unsubscribeListener(); // Cancelar listener anterior si existe
+        }
+        
+        unsubscribeListener = escucharCambiosCanciones((cancionesActualizadas) => {
+            canciones = cancionesActualizadas;
+            renderizarCanciones();
+            console.log('Canciones actualizadas en tiempo real');
+        });
+    } catch (error) {
+        console.error('Error al cargar canciones:', error);
+        alert('Error al cargar las canciones. Verifica tu conexión.');
     }
-    renderizarCanciones();
 }
 
+// Ya no necesitamos guardarEnStorage porque Firebase guarda automáticamente
 function guardarEnStorage() {
-    localStorage.setItem('canciones', JSON.stringify(canciones));
+    // Función vacía para compatibilidad (ya no se usa)
+    console.log('Guardado en Firebase (automático)');
 }
 
 // === FUNCIONES DE RENDERIZADO ===
@@ -284,40 +311,51 @@ function procesarLineaConAcordes(linea) {
 }
 
 // === CRUD DE CANCIONES ===
-function agregarCancion(datos) {
-    const nuevaCancion = {
-        id: Date.now(),
-        titulo: datos.titulo,
-        artista: datos.artista,
-        tono: datos.tono,
-        letra: datos.letra,
-        fechaCreacion: new Date().toISOString()
-    };
-    
-    canciones.unshift(nuevaCancion);
-    guardarEnStorage();
-    renderizarCanciones();
-}
-
-function actualizarCancion(id, datos) {
-    const index = canciones.findIndex(c => c.id === id);
-    if (index !== -1) {
-        canciones[index] = {
-            ...canciones[index],
+async function agregarCancion(datos) {
+    try {
+        const nuevaCancion = {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
             letra: datos.letra
         };
-        guardarEnStorage();
-        renderizarCanciones();
+        
+        await agregarCancionFirestore(nuevaCancion);
+        // No necesitamos actualizar manualmente, el listener lo hará
+        console.log('Canción agregada exitosamente');
+    } catch (error) {
+        console.error('Error al agregar canción:', error);
+        alert('Error al guardar la canción. Intenta de nuevo.');
     }
 }
 
-function eliminarCancion(id) {
-    canciones = canciones.filter(c => c.id !== id);
-    guardarEnStorage();
-    renderizarCanciones();
+async function actualizarCancion(id, datos) {
+    try {
+        const datosActualizados = {
+            titulo: datos.titulo,
+            artista: datos.artista,
+            tono: datos.tono,
+            letra: datos.letra
+        };
+        
+        await actualizarCancionFirestore(id, datosActualizados);
+        // No necesitamos actualizar manualmente, el listener lo hará
+        console.log('Canción actualizada exitosamente');
+    } catch (error) {
+        console.error('Error al actualizar canción:', error);
+        alert('Error al actualizar la canción. Intenta de nuevo.');
+    }
+}
+
+async function eliminarCancion(id) {
+    try {
+        await eliminarCancionFirestore(id);
+        // No necesitamos actualizar manualmente, el listener lo hará
+        console.log('Canción eliminada exitosamente');
+    } catch (error) {
+        console.error('Error al eliminar canción:', error);
+        alert('Error al eliminar la canción. Intenta de nuevo.');
+    }
 }
 
 function editarCancion(cancion) {
@@ -507,6 +545,25 @@ function escapeHtml(text) {
 }
 
 // === INICIALIZACIÓN ===
-document.addEventListener('DOMContentLoaded', () => {
-    cargarCanciones();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Esperar a que Firebase esté listo
+    const esperarFirebase = setInterval(() => {
+        if (window.firebaseDb) {
+            clearInterval(esperarFirebase);
+            inicializarApp();
+        }
+    }, 100);
 });
+
+async function inicializarApp() {
+    console.log('Firebase conectado. Iniciando app...');
+    
+    // Opcional: Migrar canciones del localStorage a Firestore (solo la primera vez)
+    // Descomenta estas líneas si quieres migrar canciones existentes:
+    // if (localStorage.getItem('canciones')) {
+    //     await migrarLocalStorageAFirestore();
+    // }
+    
+    // Cargar canciones desde Firebase
+    await cargarCanciones();
+}
