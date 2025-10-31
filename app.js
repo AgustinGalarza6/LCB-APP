@@ -59,6 +59,7 @@ const elementos = {
     // Panel lateral toggle
     btnTogglePanel: document.getElementById('btnTogglePanel'),
     panelSide: document.getElementById('panelSide'),
+    panelOverlay: document.getElementById('panelOverlay'),
     btnCerrarPanel: document.getElementById('btnCerrarPanel'),
 
     // Modal Evento
@@ -1014,10 +1015,18 @@ async function inicializarApp() {
     // Toggle panel lateral (mobile)
     elementos.btnTogglePanel.addEventListener('click', () => {
         elementos.panelSide.classList.toggle('active');
+        elementos.panelOverlay.classList.toggle('active');
     });
     
     elementos.btnCerrarPanel.addEventListener('click', () => {
         elementos.panelSide.classList.remove('active');
+        elementos.panelOverlay.classList.remove('active');
+    });
+    
+    // Cerrar panel al hacer click en el overlay
+    elementos.panelOverlay.addEventListener('click', () => {
+        elementos.panelSide.classList.remove('active');
+        elementos.panelOverlay.classList.remove('active');
     });
 
     // Inicializar filtros y listas de eventos/playlists
