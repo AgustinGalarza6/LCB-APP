@@ -502,13 +502,17 @@ body {
     font-weight: 500;
 }
 
-.song-actions {
-    padding: 20px 25px;
+.header-info-actions {
     display: flex;
-    gap: 10px;
-    margin-bottom: 0;
-    border-bottom: 1px solid #e0e0e0;
-    background: #fff;
+    align-items: flex-start;
+    gap: 20px;
+    flex: 1;
+}
+
+.song-actions-inline {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
 }
 
 .transpose-section {
@@ -664,6 +668,19 @@ body {
     
     .btn {
         width: 100%;
+    }
+    
+    .header-info-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .song-actions-inline {
+        width: 100%;
+    }
+    
+    .song-actions-inline .btn {
+        flex: 1;
     }
     
     .transpose-section {

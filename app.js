@@ -214,11 +214,13 @@ function actualizarVistaCancion() {
         elementos.verTono.textContent = '';
     }
     
-    const letraTranspuesta = transponerLetra(cancionActual.letra, transposicion);
-    // Mostrar en la pestaña Acordes la versión formateada (acordes encima)
-    elementos.verAcordes.innerHTML = formatearLetraConAcordes(letraTranspuesta);
-    // Mostrar en la pestaña Letra solo el texto (útil para lectura/impresión)
-    elementos.verLetra.innerHTML = letraTranspuesta.split('\n').map(l => l === '' ? '<div class="linea-vacia"></div>' : `<div class="linea-letra">${escapeHtml(l)}</div>`).join('');
+    // Para acordes: usar la letra con acordes transpuestos
+    const acordesTranspuestos = transponerLetra(cancionActual.acordes || '', transposicion);
+    elementos.verAcordes.innerHTML = formatearLetraConAcordes(acordesTranspuestos);
+    
+    // Para letra: usar solo la letra sin acordes (no transponer)
+    const letraSola = cancionActual.letra || '';
+    elementos.verLetra.innerHTML = letraSola.split('\n').map(l => l === '' ? '<div class="linea-vacia"></div>' : `<div class="linea-letra">${escapeHtml(l)}</div>`).join('');
 }
 
 /**

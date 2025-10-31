@@ -118,15 +118,17 @@
     <div id="modalVerCancion" class="modal">
         <div class="modal-content modal-view">
             <div class="modal-header">
-                <div>
-                    <h2 id="verTitulo"></h2>
-                    <p class="artista-info" id="verArtista"></p>
+                <div class="header-info-actions">
+                    <div>
+                        <h2 id="verTitulo"></h2>
+                        <p class="artista-info" id="verArtista"></p>
+                    </div>
+                    <div class="song-actions-inline">
+                        <button id="btnEditarCancion" class="btn btn-small">Editar</button>
+                        <button id="btnEliminarCancion" class="btn btn-small btn-danger">Eliminar</button>
+                    </div>
                 </div>
                 <button class="btn-cerrar" id="btnCerrarModalVer">&times;</button>
-            </div>
-            <div class="song-actions">
-                <button id="btnEditarCancion" class="btn btn-small">Editar</button>
-                <button id="btnEliminarCancion" class="btn btn-small btn-danger">Eliminar</button>
             </div>
             <div class="transpose-section">
                 <div class="tono-info" id="verTono"></div>
