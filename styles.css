@@ -745,32 +745,71 @@ body {
 
 /* Modal Large para eventos */
 .modal-large {
-    max-width: 700px;
+    max-width: 750px;
+    padding: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.form-group h3 {
+    margin: 20px 0 12px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #7f8c8d;
+    font-size: 0.85rem;
 }
 
 /* Tabla de músicos */
 .tabla-musicos {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .tabla-musicos th,
 .tabla-musicos td {
-    padding: 8px;
+    padding: 10px 8px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
 
 .tabla-musicos th {
-    background: #f5f5f5;
+    background: #f8f8f8;
     font-weight: 600;
     font-size: 0.9rem;
+    color: #555;
 }
 
 .input-tabla {
     width: 100%;
-    padding: 6px;
+    padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 0.9rem;
@@ -780,9 +819,10 @@ body {
     background: transparent;
     border: none;
     color: #e74c3c;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
-    padding: 0;
+    padding: 0 5px;
+    line-height: 1;
 }
 
 .btn-eliminar-fila:hover {
@@ -791,37 +831,59 @@ body {
 
 /* Lista de canciones del evento */
 .lista-canciones-evento {
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 10px;
-    background: #f9f9f9;
-    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    background: #fafafa;
+    margin-bottom: 15px;
+}
+
+.lista-canciones-evento:empty {
+    padding: 25px;
+    text-align: center;
 }
 
 .cancion-evento-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px;
-    margin-bottom: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border-radius: 5px;
+    transition: box-shadow 0.2s;
+}
+
+.cancion-evento-item:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.cancion-evento-item span {
+    flex: 1;
+    font-size: 0.9rem;
 }
 
 .btn-eliminar-mini {
     background: transparent;
     border: none;
     color: #e74c3c;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    padding: 2px 6px;
+    padding: 2px 8px;
+    margin-left: 10px;
 }
 
 .btn-eliminar-mini:hover {
     color: #c0392b;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    margin-top: 5px;
 }
 
 /* Modal selección canciones */

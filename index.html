@@ -150,7 +150,57 @@
         </div>
     </div>
 
-    <!-- Modal Gestión de Evento -->
+    <!-- Modal Gestión de Evento/Cronograma (Playlists) -->
+    <div id="modalPlaylist" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalPlaylistTitulo">Gestionar Cronograma</h2>
+                <button class="btn-cerrar" id="btnCerrarModalPlaylist">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="playlistNombre">Nombre del cronograma*</label>
+                <input type="text" id="playlistNombre" required placeholder="Ej: Domingo 02/11">
+            </div>
+            
+            <div class="form-group">
+                <label for="playlistFecha">Fecha*</label>
+                <input type="date" id="playlistFecha" required>
+            </div>
+
+            <div class="form-group">
+                <h3>Músicos participantes</h3>
+                <table class="tabla-musicos">
+                    <thead>
+                        <tr>
+                            <th>Instrumento/Rol</th>
+                            <th>Músico</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaPlaylist">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+                <button type="button" id="btnAgregarMusicoPlaylist" class="btn btn-small">+ Agregar Músico</button>
+            </div>
+
+            <div class="form-group">
+                <h3>Canciones del setlist</h3>
+                <div id="cancionesPlaylist" class="lista-canciones-evento">
+                    <small>No hay canciones agregadas</small>
+                </div>
+                <button type="button" id="btnAgregarCancionPlaylist" class="btn btn-small">+ Agregar Canción</button>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnCancelarPlaylist">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarPlaylist">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gestión de Evento (más robusto para eventos masivos) -->
     <div id="modalEvento" class="modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -160,7 +210,7 @@
             
             <div class="form-group">
                 <label for="eventoNombre">Nombre del evento*</label>
-                <input type="text" id="eventoNombre" required>
+                <input type="text" id="eventoNombre" required placeholder="Ej: Concierto Especial, Retiro Juvenil">
             </div>
             
             <div class="form-group">
@@ -169,13 +219,18 @@
             </div>
 
             <div class="form-group">
-                <h3 style="margin-bottom: 10px;">Músicos participantes</h3>
-                <table id="tablaMusicos" class="tabla-musicos">
+                <label for="eventoDescripcion">Descripción</label>
+                <textarea id="eventoDescripcion" rows="3" placeholder="Detalles adicionales del evento..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <h3>Músicos participantes</h3>
+                <table class="tabla-musicos">
                     <thead>
                         <tr>
                             <th>Instrumento/Rol</th>
                             <th>Músico</th>
-                            <th></th>
+                            <th style="width: 40px;"></th>
                         </tr>
                     </thead>
                     <tbody id="cuerpoTablaMusicos">
@@ -186,9 +241,9 @@
             </div>
 
             <div class="form-group">
-                <h3 style="margin-bottom: 10px;">Canciones del setlist</h3>
+                <h3>Canciones del setlist</h3>
                 <div id="cancionesEvento" class="lista-canciones-evento">
-                    <!-- Lista dinámica de canciones seleccionadas -->
+                    <small>No hay canciones agregadas</small>
                 </div>
                 <button type="button" id="btnAgregarCancionEvento" class="btn btn-small">+ Agregar Canción</button>
             </div>
