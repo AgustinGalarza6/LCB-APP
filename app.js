@@ -1,11 +1,17 @@
 // === IMPORTS DE FIREBASE ===
 import { 
     obtenerCanciones, 
+    obtenerCancionesPorTono,
+    obtenerCancionesPorTematica,
     agregarCancionFirestore, 
     actualizarCancionFirestore, 
     eliminarCancionFirestore,
     escucharCambiosCanciones,
-    migrarLocalStorageAFirestore
+    migrarLocalStorageAFirestore,
+    crearEvento,
+    obtenerEventos,
+    crearPlaylist,
+    obtenerPlaylists
 } from './firebase-db.js';
 
 // === ESTADO DE LA APLICACIÓN ===
@@ -34,7 +40,18 @@ const elementos = {
     inputArtista: document.getElementById('artista'),
     inputTono: document.getElementById('tono'),
     inputLetra: document.getElementById('letra'),
-    
+    inputTematica: document.getElementById('tematica'),
+
+    // Panel lateral (filtros, eventos, playlists)
+    filterTono: document.getElementById('filterTono'),
+    btnFilterTono: document.getElementById('btnFilterTono'),
+    filterTematica: document.getElementById('filterTematica'),
+    btnFilterTematica: document.getElementById('btnFilterTematica'),
+    btnCrearEvento: document.getElementById('btnCrearEvento'),
+    listaEventos: document.getElementById('listaEventos'),
+    btnCrearPlaylist: document.getElementById('btnCrearPlaylist'),
+    listaPlaylists: document.getElementById('listaPlaylists'),
+
     // Modal Ver Canción
     modalVerCancion: document.getElementById('modalVerCancion'),
     btnCerrarModalVer: document.getElementById('btnCerrarModalVer'),
@@ -42,6 +59,7 @@ const elementos = {
     verArtista: document.getElementById('verArtista'),
     verTono: document.getElementById('verTono'),
     verLetra: document.getElementById('verLetra'),
+    verAcordes: document.getElementById('verAcordes'),
     btnEditarCancion: document.getElementById('btnEditarCancion'),
     btnEliminarCancion: document.getElementById('btnEliminarCancion'),
     
@@ -156,7 +174,103 @@ function actualizarVistaCancion() {
     }
     
     const letraTranspuesta = transponerLetra(cancionActual.letra, transposicion);
-    elementos.verLetra.innerHTML = formatearLetraConAcordes(letraTranspuesta);
+    // Mostrar en la pestaña Acordes la versión formateada (acordes encima)
+    elementos.verAcordes.innerHTML = formatearLetraConAcordes(letraTranspuesta);
+    // Mostrar en la pestaña Letra solo el texto (útil para lectura/impresión)
+    elementos.verLetra.innerHTML = letraTranspuesta.split('\n').map(l => l === '' ? '<div class="linea-vacia"></div>' : `<div class="linea-letra">${escapeHtml(l)}</div>`).join('');
+}
+
+/**
+ * Aplicar filtro por tono usando Firestore
+ */
+async function aplicarFiltroTono() {
+    const tono = elementos.filterTono.value.trim();
+    try {
+        if (!tono) {
+            canciones = await obtenerCanciones();
+        } else {
+            canciones = await obtenerCancionesPorTono(tono);
+        }
+        renderizarCanciones();
+    } catch (err) {
+        console.error('Error al filtrar por tono', err);
+        alert('No se pudo filtrar por tono. Revisa la consola.');
+    }
+}
+
+/**
+ * Aplicar filtro por tematica (busca en el array tematicas)
+ */
+async function aplicarFiltroTematica() {
+    const tema = elementos.filterTematica.value.trim();
+    try {
+        if (!tema) {
+            canciones = await obtenerCanciones();
+        } else {
+            canciones = await obtenerCancionesPorTematica(tema);
+        }
+        renderizarCanciones();
+    } catch (err) {
+        console.error('Error al filtrar por tematica', err);
+        alert('No se pudo filtrar por temática. Revisa la consola.');
+    }
+}
+
+// Eventos simples: crear y listar
+async function crearEventoSimple() {
+    const nombre = prompt('Nombre del evento:');
+    if (!nombre) return;
+    const fecha = prompt('Fecha del evento (YYYY-MM-DD):');
+    try {
+        await crearEvento({ nombre, fecha, canciones: [], musicos: [] });
+        await cargarYMostrarEventos();
+        alert('Evento creado');
+    } catch (err) { console.error(err); alert('Error creando evento'); }
+}
+
+async function cargarYMostrarEventos() {
+    try {
+        const eventos = await obtenerEventos();
+        elementos.listaEventos.innerHTML = '';
+        if (eventos.length === 0) {
+            elementos.listaEventos.innerHTML = '<small>No hay eventos</small>';
+            return;
+        }
+        eventos.forEach(ev => {
+            const el = document.createElement('div');
+            el.className = 'evento-item';
+            el.textContent = `${ev.fecha || ''} — ${ev.nombre}`;
+            elementos.listaEventos.appendChild(el);
+        });
+    } catch (err) { console.error('cargarYMostrarEventos', err); }
+}
+
+// Playlists: crear y listar
+async function crearPlaylistSimple() {
+    const nombre = prompt('Nombre del cronograma / playlist:');
+    if (!nombre) return;
+    try {
+        await crearPlaylist({ nombre, canciones: [] });
+        await cargarYMostrarPlaylists();
+        alert('Playlist creada');
+    } catch (err) { console.error(err); alert('Error creando playlist'); }
+}
+
+async function cargarYMostrarPlaylists() {
+    try {
+        const pls = await obtenerPlaylists();
+        elementos.listaPlaylists.innerHTML = '';
+        if (pls.length === 0) {
+            elementos.listaPlaylists.innerHTML = '<small>No hay playlists</small>';
+            return;
+        }
+        pls.forEach(pl => {
+            const el = document.createElement('div');
+            el.className = 'playlist-item';
+            el.textContent = `${pl.nombre} (${(pl.canciones || []).length} canciones)`;
+            elementos.listaPlaylists.appendChild(el);
+        });
+    } catch (err) { console.error('cargarYMostrarPlaylists', err); }
 }
 
 function formatearLetraConAcordes(letra) {
@@ -317,7 +431,9 @@ async function agregarCancion(datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
-            letra: datos.letra
+            letra: datos.letra,
+            // Guardar tematicas como array para facilitar queries
+            tematicas: datos.tematicas || []
         };
         
         await agregarCancionFirestore(nuevaCancion);
@@ -335,7 +451,8 @@ async function actualizarCancion(id, datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
-            letra: datos.letra
+            letra: datos.letra,
+            tematicas: datos.tematicas || []
         };
         
         await actualizarCancionFirestore(id, datosActualizados);
@@ -365,6 +482,8 @@ function editarCancion(cancion) {
     elementos.inputArtista.value = cancion.artista;
     elementos.inputTono.value = cancion.tono || '';
     elementos.inputLetra.value = cancion.letra;
+    // Recuperar tematicas desde array si existe
+    elementos.inputTematica.value = (cancion.tematicas || []).join(', ');
     abrirModal(elementos.modalCancion);
 }
 
@@ -423,7 +542,8 @@ elementos.formCancion.addEventListener('submit', (e) => {
         titulo: elementos.inputTitulo.value.trim(),
         artista: elementos.inputArtista.value.trim(),
         tono: elementos.inputTono.value.trim(),
-        letra: elementos.inputLetra.value.trim()
+        letra: elementos.inputLetra.value.trim(),
+        tematicas: elementos.inputTematica.value.split(',').map(s => s.trim()).filter(Boolean)
     };
     
     if (cancionEditando) {
@@ -566,4 +686,26 @@ async function inicializarApp() {
     
     // Cargar canciones desde Firebase
     await cargarCanciones();
+
+    // Inicializar filtros y listas de eventos/playlists
+    elementos.btnFilterTono.addEventListener('click', aplicarFiltroTono);
+    elementos.btnFilterTematica.addEventListener('click', aplicarFiltroTematica);
+    elementos.btnCrearEvento.addEventListener('click', crearEventoSimple);
+    elementos.btnCrearPlaylist.addEventListener('click', crearPlaylistSimple);
+
+    // Cargar listas iniciales
+    await cargarYMostrarEventos();
+    await cargarYMostrarPlaylists();
+
+    // Manejo simple de tabs en la vista de canción
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'acordes') document.getElementById('verAcordes').classList.add('active');
+            if (tab === 'letra') document.getElementById('verLetra').classList.add('active');
+        });
+    });
 }

@@ -8,7 +8,8 @@ import {
     deleteDoc,
     query,
     orderBy,
-    onSnapshot
+    onSnapshot,
+    where
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Referencia a la colección de canciones
@@ -38,6 +39,79 @@ export async function obtenerCanciones() {
         console.error('Error al obtener canciones:', error);
         return [];
     }
+}
+
+/**
+ * Consultar canciones por tono
+ */
+export async function obtenerCancionesPorTono(tono) {
+    try {
+        if (!tono) return await obtenerCanciones();
+        const q = query(cancionesRef(), where('tono', '==', tono));
+        const snapshot = await getDocs(q);
+        const results = [];
+        snapshot.forEach(d => results.push({ id: d.id, ...d.data() }));
+        return results;
+    } catch (err) {
+        console.error('Error al consultar por tono', err);
+        return [];
+    }
+}
+
+/**
+ * Consultar canciones por temática (coincidencia simple de string)
+ */
+export async function obtenerCancionesPorTematica(tema) {
+    try {
+        if (!tema) return await obtenerCanciones();
+        // Firestore no soporta contains en strings fácilmente; hacemos consulta por campo tematicas (array) si existe
+        const q = query(cancionesRef(), where('tematicas', 'array-contains', tema));
+        const snapshot = await getDocs(q);
+        const results = [];
+        snapshot.forEach(d => results.push({ id: d.id, ...d.data() }));
+        return results;
+    } catch (err) {
+        console.error('Error al consultar por tematica', err);
+        return [];
+    }
+}
+
+// --- Eventos y Playlists ---
+const eventosRef = () => collection(window.firebaseDb, 'eventos');
+const playlistsRef = () => collection(window.firebaseDb, 'playlists');
+
+export async function crearEvento(evento) {
+    try {
+        const docRef = await addDoc(eventosRef(), { ...evento, fechaCreacion: new Date().toISOString() });
+        return docRef.id;
+    } catch (err) { console.error('crearEvento', err); throw err; }
+}
+
+export async function obtenerEventos() {
+    try {
+        const q = query(eventosRef(), orderBy('fecha', 'asc'));
+        const snap = await getDocs(q);
+        const out = [];
+        snap.forEach(d => out.push({ id: d.id, ...d.data() }));
+        return out;
+    } catch (err) { console.error('obtenerEventos', err); return []; }
+}
+
+export async function crearPlaylist(playlist) {
+    try {
+        const docRef = await addDoc(playlistsRef(), { ...playlist, fechaCreacion: new Date().toISOString() });
+        return docRef.id;
+    } catch (err) { console.error('crearPlaylist', err); throw err; }
+}
+
+export async function obtenerPlaylists() {
+    try {
+        const q = query(playlistsRef(), orderBy('fechaCreacion', 'desc'));
+        const snap = await getDocs(q);
+        const out = [];
+        snap.forEach(d => out.push({ id: d.id, ...d.data() }));
+        return out;
+    } catch (err) { console.error('obtenerPlaylists', err); return []; }
 }
 
 /**

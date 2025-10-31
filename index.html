@@ -89,6 +89,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="tematica">Temática</label>
+                    <input type="text" id="tematica" placeholder="Ej: guerra espiritual, adoración, alabanza">
+                    <small>Palabras clave separadas por comas para facilitar el filtrado</small>
+                </div>
+
+                <div class="form-group">
                     <label for="letra">Letra y Acordes*</label>
                     <textarea 
                         id="letra" 
@@ -130,10 +136,45 @@
                     <button id="btnTransposeUp" class="btn btn-transpose">+½</button>
                 </div>
             </div>
-            <div class="song-content" id="verLetra"></div>
+            <div class="song-content-tabs">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="acordes">Acordes</button>
+                    <button class="tab-btn" data-tab="letra">Letra</button>
+                </div>
+                <div class="tabs-body">
+                    <div class="tab-panel active" id="verAcordes"></div>
+                    <div class="tab-panel" id="verLetra"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+        <!-- Panel lateral: filtros y eventos/playlists -->
+        <aside class="panel-side">
+            <div class="panel-block">
+                <h4>Filtros</h4>
+                <label for="filterTono">Filtrar por tono</label>
+                <input id="filterTono" type="text" placeholder="Ej: A, Am, G#">
+                <button id="btnFilterTono" class="btn btn-small">Aplicar</button>
+                <hr>
+                <label for="filterTematica">Filtrar por temática</label>
+                <input id="filterTematica" type="text" placeholder="Ej: guerra espiritual">
+                <button id="btnFilterTematica" class="btn btn-small">Aplicar</button>
+            </div>
+
+            <div class="panel-block">
+                <h4>Eventos</h4>
+                <button id="btnCrearEvento" class="btn btn-small">Nuevo Evento</button>
+                <div id="listaEventos"></div>
+            </div>
+
+            <div class="panel-block">
+                <h4>Playlists / Cronograma</h4>
+                <button id="btnCrearPlaylist" class="btn btn-small">Crear Cronograma</button>
+                <div id="listaPlaylists"></div>
+            </div>
+        </aside>
+
+        <script type="module" src="app.js"></script>
 </body>
 </html>
