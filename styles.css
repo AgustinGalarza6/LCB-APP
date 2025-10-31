@@ -1,0 +1,492 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background: #000000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.6rem;
+    color: #ffffff;
+    font-weight: normal;
+}
+
+/* Buscador */
+.search-section {
+    padding: 2rem 0;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.search-title {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    box-shadow: none;
+    outline: none;
+    display: block;
+    margin: 0 auto;
+}
+
+.search-input:focus {
+    border-color: #3498db;
+}
+
+/* Grid de Canciones */
+.songs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    padding: 2rem 0;
+}
+
+.song-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.song-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-color: #3498db;
+}
+
+.song-card h3 {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.song-card .artista {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.song-card .tono {
+    display: inline-block;
+    background: #ecf0f1;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #2c3e50;
+    font-weight: normal;
+}
+
+/* Mensaje Vacío */
+.mensaje-vacio {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    display: none;
+    background: white;
+    border-radius: 4px;
+    margin: 2rem 0;
+}
+
+.mensaje-vacio.visible {
+    display: block;
+}
+
+/* Botones */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: normal;
+}
+
+.btn-primary {
+    background: #ffffff;
+    color: #000000;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #ffffff;
+    background: #2b2b2b;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-view {
+    max-width: 800px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 25px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.modal-header h2 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.btn-cerrar {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+}
+
+.btn-cerrar:hover {
+    color: #333;
+}
+
+/* Formulario */
+.form {
+    padding: 25px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #3498db;
+}
+
+.form-group textarea {
+    resize: vertical;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+/* Vista de Canción */
+.artista-info {
+    color: #000000;
+    font-size: 1.2rem;
+    margin-top: 0;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.song-actions {
+    padding: 20px 25px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.transpose-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.transpose-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.transpose-label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    margin-right: 5px;
+}
+
+.btn-transpose {
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    min-width: 50px;
+    background: #2c3e50;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-transpose:hover {
+    background: #1a252f;
+}
+
+.btn-transpose.btn-reset {
+    background: #95a5a6;
+}
+
+.btn-transpose.btn-reset:hover {
+    background: #7f8c8d;
+}
+
+.tono-info {
+    margin-bottom: 0;
+    padding: 0;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.song-content {
+    padding: 25px;
+    background: #fafafa;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.4;
+    font-size: 1rem;
+    border-top: none;
+}
+
+/* Estilos para acordes encima del texto */
+.linea-con-acordes {
+    margin-bottom: 0.8rem;
+    position: relative;
+}
+
+.linea-acordes {
+    color: #ff6b35;
+    font-weight: bold;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    min-height: 1.3em;
+    white-space: pre;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0;
+}
+
+.linea-acordes .acorde {
+    color: #ff6b35;
+    font-weight: bold;
+    display: inline;
+}
+
+.linea-texto {
+    color: #2c3e50;
+    line-height: 1.3;
+    font-family: Arial, Helvetica, sans-serif;
+    white-space: pre;
+    font-weight: normal;
+    font-size: 1rem;
+}
+
+.linea-letra {
+    color: #2c3e50;
+    line-height: 1.6;
+    margin-bottom: 0.3rem;
+    font-family: Arial, Helvetica, sans-serif;
+    white-space: pre;
+    font-weight: normal;
+    font-size: 1rem;
+}
+
+.linea-vacia {
+    height: 0.8rem;
+}
+
+.linea-acordes-sola {
+    color: #ff6b35;
+    font-weight: bold;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    font-family: Arial, Helvetica, sans-serif;
+    margin-bottom: 0.3rem;
+    white-space: pre;
+}
+
+.linea-acordes-sola .acorde {
+    color: #ff6b35;
+    font-weight: bold;
+}
+
+.song-content .acorde {
+    color: #ff6b35;
+    font-weight: bold;
+    font-size: 1.05rem;
+}
+
+.song-content .linea {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .logo {
+        font-size: 1.4rem;
+    }
+    
+    .songs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: 10px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .transpose-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .transpose-controls {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCB Club</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LCB WORSHIP</h1>
+            <nav class="nav">
+                <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Buscador -->
+    <section class="search-section">
+        <div class="container">
+            <h3 class="search-title">Buscar Canciones</h3>
+            <input 
+                type="text" 
+                id="inputBuscar" 
+                class="search-input" 
+                placeholder="Buscar por título o artista..."
+            >
+        </div>
+    </section>
+
+    <!-- Lista de Canciones -->
+    <main class="container">
+        <div id="listaCanciones" class="songs-grid">
+            <!-- Las canciones se cargarán aquí dinámicamente -->
+        </div>
+        <div id="mensajeVacio" class="mensaje-vacio">
+            <p>No hay canciones aún. ¡Agrega tu primera canción!</p>
+        </div>
+    </main>
+
+    <!-- Modal para Agregar/Editar Canción -->
+    <div id="modalCancion" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Agregar Canción</h2>
+                <button class="btn-cerrar" id="btnCerrarModal">&times;</button>
+            </div>
+            <form id="formCancion" class="form">
+                <div class="form-group">
+                    <label for="titulo">Título de la canción*</label>
+                    <input type="text" id="titulo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="artista">Artista*</label>
+                    <input type="text" id="artista" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tono">Tono original (opcional)</label>
+                    <input type="text" id="tono" placeholder="Ej: Am, G, C">
+                </div>
+
+                <div class="form-group">
+                    <label for="letra">Letra y Acordes*</label>
+                    <textarea 
+                        id="letra" 
+                        rows="15" 
+                        required
+                        placeholder="Puedes escribir acordes con o sin corchetes:&#10;&#10;Opción 1 (con corchetes):&#10;[Am]Soledad sobre [G]ruinas&#10;&#10;Opción 2 (sin corchetes):&#10;D    F#m   E  C#m&#10;Tu aliento, me da fuerza"
+                    ></textarea>
+                    <small>Tip: Los acordes se detectan automáticamente. Escribe la línea de acordes y luego la letra debajo.</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Canción -->
+    <div id="modalVerCancion" class="modal">
+        <div class="modal-content modal-view">
+            <div class="modal-header">
+                <div>
+                    <h2 id="verTitulo"></h2>
+                    <p class="artista-info" id="verArtista"></p>
+                </div>
+                <button class="btn-cerrar" id="btnCerrarModalVer">&times;</button>
+            </div>
+            <div class="song-actions">
+                <button id="btnEditarCancion" class="btn btn-small">Editar</button>
+                <button id="btnEliminarCancion" class="btn btn-small btn-danger">Eliminar</button>
+            </div>
+            <div class="transpose-section">
+                <div class="tono-info" id="verTono"></div>
+                <div class="transpose-controls">
+                    <span class="transpose-label">Transportar:</span>
+                    <button id="btnTransposeDown" class="btn btn-transpose">-½</button>
+                    <button id="btnTransposeReset" class="btn btn-transpose btn-reset">Orig</button>
+                    <button id="btnTransposeUp" class="btn btn-transpose">+½</button>
+                </div>
+            </div>
+            <div class="song-content" id="verLetra"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

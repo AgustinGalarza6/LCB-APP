@@ -1,0 +1,512 @@
+// === ESTADO DE LA APLICACIÓN ===
+let canciones = [];
+let cancionEditando = null;
+let cancionActual = null;
+let transposicion = 0;
+
+// === ELEMENTOS DEL DOM ===
+const elementos = {
+    listaCanciones: document.getElementById('listaCanciones'),
+    mensajeVacio: document.getElementById('mensajeVacio'),
+    inputBuscar: document.getElementById('inputBuscar'),
+    
+    // Modal Agregar/Editar
+    modalCancion: document.getElementById('modalCancion'),
+    modalTitulo: document.getElementById('modalTitulo'),
+    formCancion: document.getElementById('formCancion'),
+    btnAgregarCancion: document.getElementById('btnAgregarCancion'),
+    btnCerrarModal: document.getElementById('btnCerrarModal'),
+    btnCancelar: document.getElementById('btnCancelar'),
+    
+    // Campos del formulario
+    inputTitulo: document.getElementById('titulo'),
+    inputArtista: document.getElementById('artista'),
+    inputTono: document.getElementById('tono'),
+    inputLetra: document.getElementById('letra'),
+    
+    // Modal Ver Canción
+    modalVerCancion: document.getElementById('modalVerCancion'),
+    btnCerrarModalVer: document.getElementById('btnCerrarModalVer'),
+    verTitulo: document.getElementById('verTitulo'),
+    verArtista: document.getElementById('verArtista'),
+    verTono: document.getElementById('verTono'),
+    verLetra: document.getElementById('verLetra'),
+    btnEditarCancion: document.getElementById('btnEditarCancion'),
+    btnEliminarCancion: document.getElementById('btnEliminarCancion'),
+    
+    // Transposición
+    btnTransposeUp: document.getElementById('btnTransposeUp'),
+    btnTransposeDown: document.getElementById('btnTransposeDown'),
+    btnTransposeReset: document.getElementById('btnTransposeReset')
+};
+
+// === FUNCIONES DE LOCALSTORAGE ===
+function cargarCanciones() {
+    const cancionesGuardadas = localStorage.getItem('canciones');
+    if (cancionesGuardadas) {
+        canciones = JSON.parse(cancionesGuardadas);
+    }
+    renderizarCanciones();
+}
+
+function guardarEnStorage() {
+    localStorage.setItem('canciones', JSON.stringify(canciones));
+}
+
+// === FUNCIONES DE RENDERIZADO ===
+function renderizarCanciones(filtro = '') {
+    elementos.listaCanciones.innerHTML = '';
+    
+    const cancionesFiltradas = canciones.filter(cancion => {
+        const textoFiltro = filtro.toLowerCase();
+        return cancion.titulo.toLowerCase().includes(textoFiltro) ||
+                cancion.artista.toLowerCase().includes(textoFiltro);
+    });
+    
+    if (cancionesFiltradas.length === 0) {
+        elementos.mensajeVacio.classList.add('visible');
+        return;
+    }
+    
+    elementos.mensajeVacio.classList.remove('visible');
+    
+    cancionesFiltradas.forEach(cancion => {
+        const card = crearCardCancion(cancion);
+        elementos.listaCanciones.appendChild(card);
+    });
+}
+
+function crearCardCancion(cancion) {
+    const card = document.createElement('div');
+    card.className = 'song-card';
+    card.onclick = () => mostrarCancion(cancion);
+    
+    card.innerHTML = `
+        <h3>${escapeHtml(cancion.titulo)}</h3>
+        <p class="artista"> ${escapeHtml(cancion.artista)}</p>
+        ${cancion.tono ? `<span class="tono">Tono: ${escapeHtml(cancion.tono)}</span>` : ''}
+    `;
+    
+    return card;
+}
+
+function mostrarCancion(cancion) {
+    cancionActual = cancion;
+    transposicion = 0;
+    
+    elementos.verTitulo.textContent = cancion.titulo;
+    elementos.verArtista.textContent = `${cancion.artista}`;
+    actualizarVistaCancion();
+    
+    // Guardar referencia para editar/eliminar
+    elementos.btnEditarCancion.onclick = () => {
+        cerrarModal(elementos.modalVerCancion);
+        editarCancion(cancion);
+    };
+    
+    elementos.btnEliminarCancion.onclick = () => {
+        if (confirm(`¿Seguro que quieres eliminar "${cancion.titulo}"?`)) {
+            eliminarCancion(cancion.id);
+            cerrarModal(elementos.modalVerCancion);
+        }
+    };
+    
+    abrirModal(elementos.modalVerCancion);
+}
+
+function actualizarVistaCancion() {
+    if (!cancionActual) return;
+    
+    const tonoOriginal = cancionActual.tono || '';
+    const tonoTranspuesto = tonoOriginal ? transponerAcorde(tonoOriginal, transposicion) : '';
+    
+    if (tonoTranspuesto) {
+        elementos.verTono.textContent = transposicion === 0 
+            ? `Tonalidad: ${tonoTranspuesto}` 
+            : `Tonalidad: ${tonoTranspuesto} (Original: ${tonoOriginal})`;
+    } else {
+        elementos.verTono.textContent = '';
+    }
+    
+    const letraTranspuesta = transponerLetra(cancionActual.letra, transposicion);
+    elementos.verLetra.innerHTML = formatearLetraConAcordes(letraTranspuesta);
+}
+
+function formatearLetraConAcordes(letra) {
+    // Procesa la letra línea por línea para colocar acordes encima del texto
+    const lineas = letra.split('\n');
+    let html = '';
+    let i = 0;
+    
+    while (i < lineas.length) {
+        const linea = lineas[i];
+        
+        // Detectar si es una línea solo de acordes (sin corchetes)
+        if (esLineaDeAcordes(linea)) {
+            // Si la siguiente línea existe y tiene letra, mostrar acordes encima
+            if (i + 1 < lineas.length && lineas[i + 1].trim() !== '' && !esLineaDeAcordes(lineas[i + 1])) {
+                html += '<div class="linea-con-acordes">';
+                html += `<div class="linea-acordes">${resaltarAcordes(linea)}</div>`;
+                html += `<div class="linea-texto">${escapeHtml(lineas[i + 1])}</div>`;
+                html += '</div>';
+                // Saltar la siguiente línea porque ya la procesamos
+                i += 2;
+                continue;
+            } else {
+                // Línea de acordes sola
+                html += `<div class="linea-acordes-sola">${resaltarAcordes(linea)}</div>`;
+            }
+        } else if (linea.includes('[')) {
+            // Sistema original con corchetes
+            const lineaConAcordes = procesarLineaConAcordes(linea);
+            html += lineaConAcordes;
+        } else {
+            // Línea normal sin acordes
+            if (linea.trim() === '') {
+                html += '<div class="linea-vacia"></div>';
+            } else {
+                html += `<div class="linea-letra">${escapeHtml(linea)}</div>`;
+            }
+        }
+        
+        i++;
+    }
+    
+    return html;
+}
+
+function esLineaDeAcordes(linea) {
+    // Detecta si una línea contiene principalmente acordes
+    const lineaTrim = linea.trim();
+    
+    // Si está vacía, no es línea de acordes
+    if (lineaTrim === '') return false;
+    
+    // Si es una sección (entre paréntesis), no es línea de acordes
+    if (lineaTrim.startsWith('(') && lineaTrim.endsWith(')')) return false;
+    
+    // Si es tablatura (contiene | o números con -)
+    if (lineaTrim.includes('|-') || /^[EB][\|]/.test(lineaTrim)) return false;
+    
+    // Si tiene muchas letras seguidas, probablemente es letra
+    if (/[a-záéíóúñ]{6,}/i.test(lineaTrim)) return false;
+    
+    // Patrones de acordes comunes: D, Am, C#m, F#5, etc.
+    const patronAcorde = /\b[A-G](#|b)?(m|maj|dim|aug|sus|add)?[0-9]?\b/g;
+    const acordesEncontrados = lineaTrim.match(patronAcorde);
+    
+    // Si tiene acordes y son más del 40% de la línea, es línea de acordes
+    if (acordesEncontrados && acordesEncontrados.length > 0) {
+        const textoAcordes = acordesEncontrados.join('').length;
+        const textoTotal = lineaTrim.replace(/[\s\-\/]/g, '').length;
+        return textoAcordes / textoTotal > 0.4;
+    }
+    
+    return false;
+}
+
+function resaltarAcordes(linea) {
+    // Resalta los acordes en una línea evitando duplicación de #
+    let resultado = '';
+    let i = 0;
+    
+    while (i < linea.length) {
+        const resto = linea.substring(i);
+        // Buscar acordes: nota + opcional(# o b) + opcional(sufijo)
+        const match = resto.match(/^([A-G])(#|b)?(m|maj|dim|aug|sus|add)?([0-9]?)/);
+        
+        // Verificar que sea inicio de palabra (acorde)
+        if (match && (i === 0 || /\s/.test(linea[i-1]))) {
+            const acorde = match[0];
+            resultado += `<span class="acorde">${escapeHtml(acorde)}</span>`;
+            i += acorde.length;
+        } else {
+            resultado += escapeHtml(linea[i]);
+            i++;
+        }
+    }
+    
+    return resultado;
+}
+
+function procesarLineaConAcordes(linea) {
+    // Extraer acordes y sus posiciones (sistema con corchetes)
+    const acordes = [];
+    const regex = /\[([^\]]+)\]/g;
+    let match;
+    
+    while ((match = regex.exec(linea)) !== null) {
+        acordes.push({
+            acorde: match[1],
+            posicion: match.index
+        });
+    }
+    
+    if (acordes.length === 0) {
+        return `<div class="linea-letra">${escapeHtml(linea)}</div>`;
+    }
+    
+    // Remover los corchetes de la letra
+    let textoLimpio = linea.replace(/\[([^\]]+)\]/g, '');
+    
+    // Construir la línea de acordes con espaciado correcto
+    let html = '<div class="linea-con-acordes">';
+    html += '<div class="linea-acordes">';
+    
+    let posicionActual = 0;
+    acordes.forEach((item, index) => {
+        // Calcular cuántos caracteres de texto hay antes de este acorde
+        const textoAntes = linea.substring(0, item.posicion).replace(/\[([^\]]+)\]/g, '');
+        const espaciosNecesarios = textoAntes.length - posicionActual;
+        
+        // Agregar espacios
+        if (espaciosNecesarios > 0) {
+            html += '&nbsp;'.repeat(espaciosNecesarios);
+        }
+        
+        // Agregar el acorde
+        html += `<span class="acorde">${escapeHtml(item.acorde)}</span>`;
+        posicionActual = textoAntes.length + item.acorde.length;
+    });
+    
+    html += '</div>';
+    
+    // Solo agregar la línea de texto si no está vacía
+    if (textoLimpio.trim()) {
+        html += `<div class="linea-texto">${escapeHtml(textoLimpio)}</div>`;
+    } else {
+        html += '<div class="linea-texto">&nbsp;</div>';
+    }
+    
+    html += '</div>';
+    
+    return html;
+}
+
+// === CRUD DE CANCIONES ===
+function agregarCancion(datos) {
+    const nuevaCancion = {
+        id: Date.now(),
+        titulo: datos.titulo,
+        artista: datos.artista,
+        tono: datos.tono,
+        letra: datos.letra,
+        fechaCreacion: new Date().toISOString()
+    };
+    
+    canciones.unshift(nuevaCancion);
+    guardarEnStorage();
+    renderizarCanciones();
+}
+
+function actualizarCancion(id, datos) {
+    const index = canciones.findIndex(c => c.id === id);
+    if (index !== -1) {
+        canciones[index] = {
+            ...canciones[index],
+            titulo: datos.titulo,
+            artista: datos.artista,
+            tono: datos.tono,
+            letra: datos.letra
+        };
+        guardarEnStorage();
+        renderizarCanciones();
+    }
+}
+
+function eliminarCancion(id) {
+    canciones = canciones.filter(c => c.id !== id);
+    guardarEnStorage();
+    renderizarCanciones();
+}
+
+function editarCancion(cancion) {
+    cancionEditando = cancion;
+    elementos.modalTitulo.textContent = 'Editar Canción';
+    elementos.inputTitulo.value = cancion.titulo;
+    elementos.inputArtista.value = cancion.artista;
+    elementos.inputTono.value = cancion.tono || '';
+    elementos.inputLetra.value = cancion.letra;
+    abrirModal(elementos.modalCancion);
+}
+
+// === FUNCIONES DE MODAL ===
+function abrirModal(modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal(modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    if (modal === elementos.modalCancion) {
+        elementos.formCancion.reset();
+        cancionEditando = null;
+        elementos.modalTitulo.textContent = 'Agregar Canción';
+    }
+}
+
+// === EVENT LISTENERS ===
+elementos.btnAgregarCancion.addEventListener('click', () => {
+    abrirModal(elementos.modalCancion);
+});
+
+elementos.btnCerrarModal.addEventListener('click', () => {
+    cerrarModal(elementos.modalCancion);
+});
+
+elementos.btnCancelar.addEventListener('click', () => {
+    cerrarModal(elementos.modalCancion);
+});
+
+elementos.btnCerrarModalVer.addEventListener('click', () => {
+    cerrarModal(elementos.modalVerCancion);
+});
+
+// Cerrar modal al hacer click fuera
+elementos.modalCancion.addEventListener('click', (e) => {
+    if (e.target === elementos.modalCancion) {
+        cerrarModal(elementos.modalCancion);
+    }
+});
+
+elementos.modalVerCancion.addEventListener('click', (e) => {
+    if (e.target === elementos.modalVerCancion) {
+        cerrarModal(elementos.modalVerCancion);
+    }
+});
+
+// Manejo del formulario
+elementos.formCancion.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const datos = {
+        titulo: elementos.inputTitulo.value.trim(),
+        artista: elementos.inputArtista.value.trim(),
+        tono: elementos.inputTono.value.trim(),
+        letra: elementos.inputLetra.value.trim()
+    };
+    
+    if (cancionEditando) {
+        actualizarCancion(cancionEditando.id, datos);
+    } else {
+        agregarCancion(datos);
+    }
+    
+    cerrarModal(elementos.modalCancion);
+});
+
+// Buscador en tiempo real
+elementos.inputBuscar.addEventListener('input', (e) => {
+    renderizarCanciones(e.target.value);
+});
+
+// Botones de transposición
+elementos.btnTransposeUp.addEventListener('click', () => {
+    transposicion++;
+    actualizarVistaCancion();
+});
+
+elementos.btnTransposeDown.addEventListener('click', () => {
+    transposicion--;
+    actualizarVistaCancion();
+});
+
+elementos.btnTransposeReset.addEventListener('click', () => {
+    transposicion = 0;
+    actualizarVistaCancion();
+});
+
+// === FUNCIONES DE TRANSPOSICIÓN ===
+const notasCromaticas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const notasAlternativas = {
+    'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#',
+    'Do': 'C', 'Re': 'D', 'Mi': 'E', 'Fa': 'F', 'Sol': 'G', 'La': 'A', 'Si': 'B'
+};
+
+function transponerAcorde(acorde, semitonos) {
+    if (!acorde || semitonos === 0) return acorde;
+    
+    // Extraer la nota base y el resto del acorde (m, 7, sus4, etc.)
+    // Patrón mejorado: captura nota + un solo # o b (no múltiples)
+    const match = acorde.match(/^([A-G])(#|b)?(.*)/);
+    if (!match) return acorde;
+    
+    let [, nota, alteracion, sufijo] = match;
+    let notaBase = nota + (alteracion || '');
+    
+    // Convertir notaciones alternativas
+    if (notasAlternativas[notaBase]) {
+        notaBase = notasAlternativas[notaBase];
+    }
+    
+    // Encontrar índice de la nota
+    let indice = notasCromaticas.indexOf(notaBase);
+    if (indice === -1) return acorde;
+    
+    // Transponer
+    indice = (indice + semitonos) % 12;
+    if (indice < 0) indice += 12;
+    
+    return notasCromaticas[indice] + sufijo;
+}
+
+function transponerLetra(letra, semitonos) {
+    if (semitonos === 0) return letra;
+    
+    // Transponer acordes en formato [Acorde]
+    let letraTranspuesta = letra.replace(/\[([^\]]+)\]/g, (match, acorde) => {
+        return `[${transponerAcorde(acorde, semitonos)}]`;
+    });
+    
+    // Transponer acordes sueltos en líneas (detectados por la función esLineaDeAcordes)
+    const lineas = letraTranspuesta.split('\n');
+    letraTranspuesta = lineas.map(linea => {
+        // Solo transponer si no tiene corchetes (ya fueron procesados arriba)
+        if (esLineaDeAcordes(linea) && !linea.includes('[')) {
+            // Transponer cada acorde en la línea
+            // Verificar que no se dupliquen los #
+            let resultado = '';
+            let i = 0;
+            
+            while (i < linea.length) {
+                // Buscar acordes desde la posición actual
+                const resto = linea.substring(i);
+                const match = resto.match(/^([A-G])(#|b)?(m|maj|dim|aug|sus|add)?([0-9]?)/);
+                
+                if (match && /\b/.test(resto[0])) {
+                    const acordeOriginal = match[0];
+                    const acordeTranspuesto = transponerAcorde(acordeOriginal, semitonos);
+                    resultado += acordeTranspuesto;
+                    i += acordeOriginal.length;
+                } else {
+                    resultado += linea[i];
+                    i++;
+                }
+            }
+            
+            return resultado;
+        }
+        return linea;
+    }).join('\n');
+    
+    return letraTranspuesta;
+}
+
+// === UTILIDADES ===
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// === INICIALIZACIÓN ===
+document.addEventListener('DOMContentLoaded', () => {
+    cargarCanciones();
+});
