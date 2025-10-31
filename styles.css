@@ -218,17 +218,88 @@ body {
 
 .tabs-body .tab-panel.active { display: block; }
 
-/* Side panel */
+/* Side panel - responsive mobile-first */
 .panel-side {
     position: fixed;
-    right: 20px;
-    top: 90px;
-    width: 280px;
-    background: #fff;
-    border: 1px solid #e6e6e6;
-    padding: 12px;
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    right: -100%;
+    top: 0;
+    bottom: 0;
+    width: 90%;
+    max-width: 350px;
+    height: 100vh;
+    overflow-y: auto;
+    background: white;
+    border-left: 1px solid #ddd;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    z-index: 150;
+    transition: right 0.3s ease;
+}
+
+.panel-side.active {
+    right: 0;
+}
+
+.panel-header-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #000;
+}
+
+.panel-header-mobile h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.btn-cerrar-panel {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    color: #333;
+}
+
+.btn-icon {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 8px 12px;
+    margin-right: 10px;
+}
+
+.btn-icon:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+@media (min-width: 1000px) {
+    .panel-side {
+        right: 20px;
+        top: 90px;
+        bottom: auto;
+        width: 280px;
+        height: auto;
+        max-height: calc(100vh - 110px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        border: 1px solid #e6e6e6;
+        border-radius: 6px;
+    }
+    
+    .panel-side.active {
+        right: 20px;
+    }
+    
+    .panel-header-mobile {
+        display: none;
+    }
+    
+    .btn-icon {
+        display: none;
+    }
 }
 
 .panel-block { margin-bottom: 12px; }
@@ -626,8 +697,159 @@ body {
     background: #ecf0f1;
 }
 
-@media (max-width: 1000px) {
-    .panel-side {
-        display: none; /* Ocultar en móviles para no romper diseño */
+/* Responsive */
+@media (max-width: 768px) {
+    .header .logo {
+        font-size: 1.2rem;
     }
+    
+    .btn-primary {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+    }
+    
+    .search-section {
+        padding: 1.5rem 0;
+    }
+    
+    .search-title {
+        font-size: 1.2rem;
+    }
+    
+    .songs-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 1rem 0;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: 10px;
+    }
+    
+    .modal-large {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .tabla-musicos {
+        font-size: 0.85rem;
+    }
+    
+    .input-tabla {
+        font-size: 0.85rem;
+        padding: 4px;
+    }
+}
+
+/* Modal Large para eventos */
+.modal-large {
+    max-width: 700px;
+}
+
+/* Tabla de músicos */
+.tabla-musicos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+.tabla-musicos th,
+.tabla-musicos td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.tabla-musicos th {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.input-tabla {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.btn-eliminar-fila {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-eliminar-fila:hover {
+    color: #c0392b;
+}
+
+/* Lista de canciones del evento */
+.lista-canciones-evento {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    background: #f9f9f9;
+    margin-bottom: 10px;
+}
+
+.cancion-evento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 6px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.btn-eliminar-mini {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.btn-eliminar-mini:hover {
+    color: #c0392b;
+}
+
+/* Modal selección canciones */
+.search-container {
+    margin-bottom: 15px;
+}
+
+.lista-seleccion {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.cancion-seleccion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.cancion-seleccion-item:hover {
+    background: #f5f5f5;
+}
+
+.cancion-seleccion-item span {
+    flex: 1;
+    font-size: 0.9rem;
 }

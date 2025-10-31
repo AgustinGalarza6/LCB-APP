@@ -37,6 +37,7 @@
         <div class="container">
             <h1 class="logo">LCB WORSHIP</h1>
             <nav class="nav">
+                <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos">☰</button>
                 <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
             </nav>
         </div>
@@ -149,8 +150,79 @@
         </div>
     </div>
 
+    <!-- Modal Gestión de Evento -->
+    <div id="modalEvento" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalEventoTitulo">Gestionar Evento</h2>
+                <button class="btn-cerrar" id="btnCerrarModalEvento">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="eventoNombre">Nombre del evento*</label>
+                <input type="text" id="eventoNombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="eventoFecha">Fecha*</label>
+                <input type="date" id="eventoFecha" required>
+            </div>
+
+            <div class="form-group">
+                <h3 style="margin-bottom: 10px;">Músicos participantes</h3>
+                <table id="tablaMusicos" class="tabla-musicos">
+                    <thead>
+                        <tr>
+                            <th>Instrumento/Rol</th>
+                            <th>Músico</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaMusicos">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+                <button type="button" id="btnAgregarMusico" class="btn btn-small">+ Agregar Músico</button>
+            </div>
+
+            <div class="form-group">
+                <h3 style="margin-bottom: 10px;">Canciones del setlist</h3>
+                <div id="cancionesEvento" class="lista-canciones-evento">
+                    <!-- Lista dinámica de canciones seleccionadas -->
+                </div>
+                <button type="button" id="btnAgregarCancionEvento" class="btn btn-small">+ Agregar Canción</button>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnCancelarEvento">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarEvento">Guardar Evento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Selección de Canciones -->
+    <div id="modalSeleccionCanciones" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seleccionar Canciones</h2>
+                <button class="btn-cerrar" id="btnCerrarModalSeleccion">&times;</button>
+            </div>
+            <div class="search-container">
+                <input type="text" id="buscarCancionModal" placeholder="Buscar canción..." class="search-input">
+            </div>
+            <div id="listaCancionesSeleccion" class="lista-seleccion">
+                <!-- Lista de canciones disponibles -->
+            </div>
+        </div>
+    </div>
+
         <!-- Panel lateral: filtros y eventos/playlists -->
-        <aside class="panel-side">
+        <aside class="panel-side" id="panelSide">
+            <div class="panel-header-mobile">
+                <h3>Filtros y Eventos</h3>
+                <button id="btnCerrarPanel" class="btn-cerrar-panel">✕</button>
+            </div>
+
             <div class="panel-block">
                 <h4>Filtros</h4>
                 <label for="filterTono">Filtrar por tono</label>

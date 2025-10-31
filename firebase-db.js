@@ -59,13 +59,16 @@ export async function obtenerCancionesPorTono(tono) {
 }
 
 /**
- * Consultar canciones por temática (coincidencia simple de string)
+ * Consultar canciones por temática (coincidencia case-insensitive)
+ * Busca en el campo tematicasLower (array de strings en lowercase)
  */
 export async function obtenerCancionesPorTematica(tema) {
     try {
         if (!tema) return await obtenerCanciones();
-        // Firestore no soporta contains en strings fácilmente; hacemos consulta por campo tematicas (array) si existe
-        const q = query(cancionesRef(), where('tematicas', 'array-contains', tema));
+        // Normalizar búsqueda a lowercase
+        const temaLower = tema.toLowerCase().trim();
+        // Buscar en campo tematicasLower (guardado en lowercase)
+        const q = query(cancionesRef(), where('tematicasLower', 'array-contains', temaLower));
         const snapshot = await getDocs(q);
         const results = [];
         snapshot.forEach(d => results.push({ id: d.id, ...d.data() }));
@@ -97,6 +100,14 @@ export async function obtenerEventos() {
     } catch (err) { console.error('obtenerEventos', err); return []; }
 }
 
+export async function actualizarEvento(id, datos) {
+    try {
+        const eventoDoc = doc(window.firebaseDb, 'eventos', id);
+        await updateDoc(eventoDoc, datos);
+        console.log('Evento actualizado:', id);
+    } catch (err) { console.error('actualizarEvento', err); throw err; }
+}
+
 export async function crearPlaylist(playlist) {
     try {
         const docRef = await addDoc(playlistsRef(), { ...playlist, fechaCreacion: new Date().toISOString() });
@@ -112,6 +123,14 @@ export async function obtenerPlaylists() {
         snap.forEach(d => out.push({ id: d.id, ...d.data() }));
         return out;
     } catch (err) { console.error('obtenerPlaylists', err); return []; }
+}
+
+export async function actualizarPlaylist(id, datos) {
+    try {
+        const playlistDoc = doc(window.firebaseDb, 'playlists', id);
+        await updateDoc(playlistDoc, datos);
+        console.log('Playlist actualizada:', id);
+    } catch (err) { console.error('actualizarPlaylist', err); throw err; }
 }
 
 /**

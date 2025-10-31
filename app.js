@@ -10,8 +10,10 @@ import {
     migrarLocalStorageAFirestore,
     crearEvento,
     obtenerEventos,
+    actualizarEvento,
     crearPlaylist,
-    obtenerPlaylists
+    obtenerPlaylists,
+    actualizarPlaylist
 } from './firebase-db.js';
 
 // === ESTADO DE LA APLICACIÓN ===
@@ -20,6 +22,7 @@ let cancionEditando = null;
 let cancionActual = null;
 let transposicion = 0;
 let unsubscribeListener = null;
+let eventoActual = null; // Para gestionar eventos
 
 // === ELEMENTOS DEL DOM ===
 const elementos = {
@@ -52,6 +55,29 @@ const elementos = {
     btnCrearPlaylist: document.getElementById('btnCrearPlaylist'),
     listaPlaylists: document.getElementById('listaPlaylists'),
 
+    // Panel lateral toggle
+    btnTogglePanel: document.getElementById('btnTogglePanel'),
+    panelSide: document.getElementById('panelSide'),
+    btnCerrarPanel: document.getElementById('btnCerrarPanel'),
+
+    // Modal Evento
+    modalEvento: document.getElementById('modalEvento'),
+    btnCerrarModalEvento: document.getElementById('btnCerrarModalEvento'),
+    eventoNombre: document.getElementById('eventoNombre'),
+    eventoFecha: document.getElementById('eventoFecha'),
+    cuerpoTablaMusicos: document.getElementById('cuerpoTablaMusicos'),
+    btnAgregarMusico: document.getElementById('btnAgregarMusico'),
+    cancionesEvento: document.getElementById('cancionesEvento'),
+    btnAgregarCancionEvento: document.getElementById('btnAgregarCancionEvento'),
+    btnCancelarEvento: document.getElementById('btnCancelarEvento'),
+    btnGuardarEvento: document.getElementById('btnGuardarEvento'),
+
+    // Modal Selección Canciones
+    modalSeleccionCanciones: document.getElementById('modalSeleccionCanciones'),
+    btnCerrarModalSeleccion: document.getElementById('btnCerrarModalSeleccion'),
+    buscarCancionModal: document.getElementById('buscarCancionModal'),
+    listaCancionesSeleccion: document.getElementById('listaCancionesSeleccion'),
+    
     // Modal Ver Canción
     modalVerCancion: document.getElementById('modalVerCancion'),
     btnCerrarModalVer: document.getElementById('btnCerrarModalVer'),
@@ -216,16 +242,144 @@ async function aplicarFiltroTematica() {
     }
 }
 
-// Eventos simples: crear y listar
-async function crearEventoSimple() {
-    const nombre = prompt('Nombre del evento:');
-    if (!nombre) return;
-    const fecha = prompt('Fecha del evento (YYYY-MM-DD):');
+// === GESTIÓN DE EVENTOS ===
+async function crearEventoCompleto() {
+    eventoActual = { canciones: [], musicos: [] };
+    elementos.eventoNombre.value = '';
+    elementos.eventoFecha.value = '';
+    elementos.cuerpoTablaMusicos.innerHTML = '';
+    elementos.cancionesEvento.innerHTML = '<small>No hay canciones agregadas</small>';
+    abrirModal(elementos.modalEvento);
+}
+
+async function abrirEvento(evento) {
+    eventoActual = evento;
+    elementos.eventoNombre.value = evento.nombre || '';
+    elementos.eventoFecha.value = evento.fecha || '';
+    
+    // Renderizar músicos
+    elementos.cuerpoTablaMusicos.innerHTML = '';
+    (evento.musicos || []).forEach(m => agregarFilaMusico(m.rol, m.nombre));
+    
+    // Renderizar canciones
+    renderizarCancionesEvento();
+    
+    abrirModal(elementos.modalEvento);
+}
+
+function agregarFilaMusico(rol = '', nombre = '') {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+        <td><input type="text" class="input-tabla" placeholder="Ej: Voz, Guitarra" value="${escapeHtml(rol)}"></td>
+        <td><input type="text" class="input-tabla" placeholder="Nombre" value="${escapeHtml(nombre)}"></td>
+        <td><button type="button" class="btn-eliminar-fila">✕</button></td>
+    `;
+    fila.querySelector('.btn-eliminar-fila').addEventListener('click', () => fila.remove());
+    elementos.cuerpoTablaMusicos.appendChild(fila);
+}
+
+function renderizarCancionesEvento() {
+    if (!eventoActual || !eventoActual.canciones || eventoActual.canciones.length === 0) {
+        elementos.cancionesEvento.innerHTML = '<small>No hay canciones agregadas</small>';
+        return;
+    }
+    
+    elementos.cancionesEvento.innerHTML = '';
+    eventoActual.canciones.forEach((cancionId, index) => {
+        const cancion = canciones.find(c => c.id === cancionId);
+        if (cancion) {
+            const item = document.createElement('div');
+            item.className = 'cancion-evento-item';
+            item.innerHTML = `
+                <span>${index + 1}. ${escapeHtml(cancion.titulo)} - ${escapeHtml(cancion.artista)}</span>
+                <button class="btn-eliminar-mini" data-index="${index}">✕</button>
+            `;
+            item.querySelector('.btn-eliminar-mini').addEventListener('click', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                eventoActual.canciones.splice(idx, 1);
+                renderizarCancionesEvento();
+            });
+            elementos.cancionesEvento.appendChild(item);
+        }
+    });
+}
+
+async function guardarEvento() {
+    const nombre = elementos.eventoNombre.value.trim();
+    const fecha = elementos.eventoFecha.value;
+    
+    if (!nombre || !fecha) {
+        alert('Por favor completa el nombre y fecha del evento');
+        return;
+    }
+    
+    // Recopilar músicos de la tabla
+    const musicos = [];
+    elementos.cuerpoTablaMusicos.querySelectorAll('tr').forEach(tr => {
+        const inputs = tr.querySelectorAll('.input-tabla');
+        const rol = inputs[0].value.trim();
+        const nombreMusico = inputs[1].value.trim();
+        if (rol && nombreMusico) {
+            musicos.push({ rol, nombre: nombreMusico });
+        }
+    });
+    
+    const datosEvento = {
+        nombre,
+        fecha,
+        musicos,
+        canciones: eventoActual.canciones || []
+    };
+    
     try {
-        await crearEvento({ nombre, fecha, canciones: [], musicos: [] });
+        if (eventoActual.id) {
+            await actualizarEvento(eventoActual.id, datosEvento);
+            alert('Evento actualizado');
+        } else {
+            await crearEvento(datosEvento);
+            alert('Evento creado');
+        }
+        cerrarModal(elementos.modalEvento);
         await cargarYMostrarEventos();
-        alert('Evento creado');
-    } catch (err) { console.error(err); alert('Error creando evento'); }
+    } catch (err) {
+        console.error(err);
+        alert('Error al guardar evento');
+    }
+}
+
+function abrirModalSeleccionCanciones() {
+    renderizarListaSeleccionCanciones();
+    abrirModal(elementos.modalSeleccionCanciones);
+}
+
+function renderizarListaSeleccionCanciones(filtro = '') {
+    elementos.listaCancionesSeleccion.innerHTML = '';
+    
+    const cancionesFiltradas = canciones.filter(c => {
+        const texto = filtro.toLowerCase();
+        return c.titulo.toLowerCase().includes(texto) || c.artista.toLowerCase().includes(texto);
+    });
+    
+    cancionesFiltradas.forEach(cancion => {
+        const item = document.createElement('div');
+        item.className = 'cancion-seleccion-item';
+        const yaAgregada = eventoActual.canciones && eventoActual.canciones.includes(cancion.id);
+        item.innerHTML = `
+            <span>${escapeHtml(cancion.titulo)} - ${escapeHtml(cancion.artista)}</span>
+            <button class="btn btn-small ${yaAgregada ? 'btn-secondary' : ''}" ${yaAgregada ? 'disabled' : ''}>
+                ${yaAgregada ? 'Agregada' : 'Agregar'}
+            </button>
+        `;
+        if (!yaAgregada) {
+            item.querySelector('button').addEventListener('click', () => {
+                if (!eventoActual.canciones) eventoActual.canciones = [];
+                eventoActual.canciones.push(cancion.id);
+                renderizarCancionesEvento();
+                renderizarListaSeleccionCanciones(elementos.buscarCancionModal.value);
+            });
+        }
+        elementos.listaCancionesSeleccion.appendChild(item);
+    });
 }
 
 async function cargarYMostrarEventos() {
@@ -240,6 +394,7 @@ async function cargarYMostrarEventos() {
             const el = document.createElement('div');
             el.className = 'evento-item';
             el.textContent = `${ev.fecha || ''} — ${ev.nombre}`;
+            el.addEventListener('click', () => abrirEvento(ev));
             elementos.listaEventos.appendChild(el);
         });
     } catch (err) { console.error('cargarYMostrarEventos', err); }
@@ -427,13 +582,16 @@ function procesarLineaConAcordes(linea) {
 // === CRUD DE CANCIONES ===
 async function agregarCancion(datos) {
     try {
+        const tematicas = datos.tematicas || [];
         const nuevaCancion = {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
             letra: datos.letra,
             // Guardar tematicas como array para facilitar queries
-            tematicas: datos.tematicas || []
+            tematicas: tematicas,
+            // Guardar versión en lowercase para búsqueda case-insensitive
+            tematicasLower: tematicas.map(t => t.toLowerCase())
         };
         
         await agregarCancionFirestore(nuevaCancion);
@@ -447,12 +605,14 @@ async function agregarCancion(datos) {
 
 async function actualizarCancion(id, datos) {
     try {
+        const tematicas = datos.tematicas || [];
         const datosActualizados = {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
             letra: datos.letra,
-            tematicas: datos.tematicas || []
+            tematicas: tematicas,
+            tematicasLower: tematicas.map(t => t.toLowerCase())
         };
         
         await actualizarCancionFirestore(id, datosActualizados);
@@ -687,11 +847,34 @@ async function inicializarApp() {
     // Cargar canciones desde Firebase
     await cargarCanciones();
 
+    // Toggle panel lateral (mobile)
+    elementos.btnTogglePanel.addEventListener('click', () => {
+        elementos.panelSide.classList.toggle('active');
+    });
+    
+    elementos.btnCerrarPanel.addEventListener('click', () => {
+        elementos.panelSide.classList.remove('active');
+    });
+
     // Inicializar filtros y listas de eventos/playlists
     elementos.btnFilterTono.addEventListener('click', aplicarFiltroTono);
     elementos.btnFilterTematica.addEventListener('click', aplicarFiltroTematica);
-    elementos.btnCrearEvento.addEventListener('click', crearEventoSimple);
+    elementos.btnCrearEvento.addEventListener('click', crearEventoCompleto);
     elementos.btnCrearPlaylist.addEventListener('click', crearPlaylistSimple);
+
+    // Gestión de eventos
+    elementos.btnCerrarModalEvento.addEventListener('click', () => cerrarModal(elementos.modalEvento));
+    elementos.btnCancelarEvento.addEventListener('click', () => cerrarModal(elementos.modalEvento));
+    elementos.btnGuardarEvento.addEventListener('click', guardarEvento);
+    elementos.btnAgregarMusico.addEventListener('click', () => agregarFilaMusico());
+    elementos.btnAgregarCancionEvento.addEventListener('click', abrirModalSeleccionCanciones);
+    
+    // Modal selección canciones
+    elementos.btnCerrarModalSeleccion.addEventListener('click', () => cerrarModal(elementos.modalSeleccionCanciones));
+    elementos.buscarCancionModal.addEventListener('input', (e) => renderizarListaSeleccionCanciones(e.target.value));
+    elementos.modalSeleccionCanciones.addEventListener('click', (e) => {
+        if (e.target === elementos.modalSeleccionCanciones) cerrarModal(elementos.modalSeleccionCanciones);
+    });
 
     // Cargar listas iniciales
     await cargarYMostrarEventos();
