@@ -416,7 +416,7 @@ body {
     padding: 25px;
     border-bottom: 1px solid #e0e0e0;
     background: #f8f9fa;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .modal-header h2 {

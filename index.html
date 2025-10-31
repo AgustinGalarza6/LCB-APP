@@ -96,14 +96,25 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="letra">Letra y Acordes*</label>
+                    <label for="acordes">Acordes*</label>
+                    <textarea 
+                        id="acordes" 
+                        rows="15" 
+                        required
+                        placeholder="Escribe los acordes con la letra integrada:&#10;&#10;Ejemplo con corchetes:&#10;[Am]Soledad sobre [G]ruinas&#10;&#10;Ejemplo sin corchetes:&#10;D    F#m   E  C#m&#10;Tu aliento, me da fuerza"
+                    ></textarea>
+                    <small>Tip: Los acordes se muestran encima de la letra en la vista de Acordes</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="letra">Letra (solo texto)*</label>
                     <textarea 
                         id="letra" 
                         rows="15" 
                         required
-                        placeholder="Puedes escribir acordes con o sin corchetes:&#10;&#10;Opción 1 (con corchetes):&#10;[Am]Soledad sobre [G]ruinas&#10;&#10;Opción 2 (sin corchetes):&#10;D    F#m   E  C#m&#10;Tu aliento, me da fuerza"
+                        placeholder="Escribe solo la letra de la canción, sin acordes:&#10;&#10;Soledad sobre ruinas&#10;El grito de la ciudad&#10;Espíritu despierta..."
                     ></textarea>
-                    <small>Tip: Los acordes se detectan automáticamente. Escribe la línea de acordes y luego la letra debajo.</small>
+                    <small>Tip: Este campo se usa para la vista de Letra (solo texto, sin acordes)</small>
                 </div>
 
                 <div class="form-actions">

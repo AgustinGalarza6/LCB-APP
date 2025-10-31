@@ -43,6 +43,7 @@ const elementos = {
     inputTitulo: document.getElementById('titulo'),
     inputArtista: document.getElementById('artista'),
     inputTono: document.getElementById('tono'),
+    inputAcordes: document.getElementById('acordes'),
     inputLetra: document.getElementById('letra'),
     inputTematica: document.getElementById('tematica'),
 
@@ -743,6 +744,7 @@ async function agregarCancion(datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
+            acordes: datos.acordes,
             letra: datos.letra,
             // Guardar tematicas como array para facilitar queries
             tematicas: tematicas,
@@ -766,6 +768,7 @@ async function actualizarCancion(id, datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
+            acordes: datos.acordes,
             letra: datos.letra,
             tematicas: tematicas,
             tematicasLower: tematicas.map(t => t.toLowerCase())
@@ -797,7 +800,8 @@ function editarCancion(cancion) {
     elementos.inputTitulo.value = cancion.titulo;
     elementos.inputArtista.value = cancion.artista;
     elementos.inputTono.value = cancion.tono || '';
-    elementos.inputLetra.value = cancion.letra;
+    elementos.inputAcordes.value = cancion.acordes || '';
+    elementos.inputLetra.value = cancion.letra || '';
     // Recuperar tematicas desde array si existe
     elementos.inputTematica.value = (cancion.tematicas || []).join(', ');
     abrirModal(elementos.modalCancion);
@@ -858,6 +862,7 @@ elementos.formCancion.addEventListener('submit', (e) => {
         titulo: elementos.inputTitulo.value.trim(),
         artista: elementos.inputArtista.value.trim(),
         tono: elementos.inputTono.value.trim(),
+        acordes: elementos.inputAcordes.value.trim(),
         letra: elementos.inputLetra.value.trim(),
         tematicas: elementos.inputTematica.value.split(',').map(s => s.trim()).filter(Boolean)
     };
