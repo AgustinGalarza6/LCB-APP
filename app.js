@@ -310,11 +310,23 @@ function renderizarCancionesEvento() {
                 <span>${index + 1}. ${escapeHtml(cancion.titulo)} - ${escapeHtml(cancion.artista)}</span>
                 <button class="btn-eliminar-mini" data-index="${index}">✕</button>
             `;
+            
+            // Click en la canción para verla
+            item.addEventListener('click', (e) => {
+                // Evitar abrir si se clickeó el botón eliminar
+                if (!e.target.classList.contains('btn-eliminar-mini')) {
+                    mostrarCancion(cancion);
+                }
+            });
+            
+            // Botón eliminar
             item.querySelector('.btn-eliminar-mini').addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que se dispare el click del item
                 const idx = parseInt(e.target.getAttribute('data-index'));
                 eventoActual.canciones.splice(idx, 1);
                 renderizarCancionesEvento();
             });
+            
             elementos.cancionesEvento.appendChild(item);
         }
     });
@@ -417,11 +429,23 @@ function renderizarCancionesPlaylist() {
                 <span>${index + 1}. ${escapeHtml(cancion.titulo)} - ${escapeHtml(cancion.artista)}</span>
                 <button class="btn-eliminar-mini" data-index="${index}">✕</button>
             `;
+            
+            // Click en la canción para verla
+            item.addEventListener('click', (e) => {
+                // Evitar abrir si se clickeó el botón eliminar
+                if (!e.target.classList.contains('btn-eliminar-mini')) {
+                    mostrarCancion(cancion);
+                }
+            });
+            
+            // Botón eliminar
             item.querySelector('.btn-eliminar-mini').addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que se dispare el click del item
                 const idx = parseInt(e.target.getAttribute('data-index'));
                 playlistActual.canciones.splice(idx, 1);
                 renderizarCancionesPlaylist();
             });
+            
             elementos.cancionesPlaylist.appendChild(item);
         }
     });
@@ -529,7 +553,8 @@ async function cargarYMostrarEventos() {
         eventos.forEach(ev => {
             const el = document.createElement('div');
             el.className = 'evento-item';
-            el.textContent = `${ev.fecha || ''} — ${ev.nombre}`;
+            const fechaFormateada = formatearFecha(ev.fecha);
+            el.textContent = `${ev.nombre} - ${fechaFormateada}`;
             el.addEventListener('click', () => abrirEvento(ev));
             elementos.listaEventos.appendChild(el);
         });
@@ -548,7 +573,8 @@ async function cargarYMostrarPlaylists() {
         pls.forEach(pl => {
             const el = document.createElement('div');
             el.className = 'playlist-item';
-            el.textContent = `${pl.fecha || pl.nombre} (${(pl.canciones || []).length} canciones)`;
+            const fechaFormateada = formatearFecha(pl.fecha);
+            el.textContent = `${pl.nombre} - ${fechaFormateada}`;
             el.addEventListener('click', () => abrirPlaylist(pl));
             elementos.listaPlaylists.appendChild(el);
         });
@@ -949,6 +975,17 @@ function escapeHtml(text) {
         "'": '&#039;'
     };
     return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
+ * Formatea una fecha YYYY-MM-DD a DD/MM/YYYY
+ */
+function formatearFecha(fechaISO) {
+    if (!fechaISO) return '';
+    const partes = fechaISO.split('-');
+    if (partes.length !== 3) return fechaISO;
+    const [year, month, day] = partes;
+    return `${parseInt(day)}/${parseInt(month)}/${year}`;
 }
 
 // === INICIALIZACIÓN ===
