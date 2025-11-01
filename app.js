@@ -228,18 +228,33 @@ function actualizarVistaCancion() {
  * Aplicar filtro por tono usando Firestore
  */
 async function aplicarFiltroTono() {
-    const tono = elementos.filterTono.value.trim();
+    const tonoInput = elementos.filterTono.value.trim();
     try {
-        if (!tono) {
+        if (!tonoInput) {
             canciones = await obtenerCanciones();
         } else {
-            canciones = await obtenerCancionesPorTono(tono);
+            // Normalizar el tono: primera letra mayúscula, resto minúscula (excepto # y m)
+            // Ejemplos: "d" -> "D", "am" -> "Am", "g#" -> "G#"
+            const tonoNormalizado = normalizarTono(tonoInput);
+            canciones = await obtenerCancionesPorTono(tonoNormalizado);
         }
         renderizarCanciones();
     } catch (err) {
         console.error('Error al filtrar por tono', err);
         alert('No se pudo filtrar por tono. Revisa la consola.');
     }
+}
+
+/**
+ * Normaliza un tono para búsqueda (D, Am, G#, etc.)
+ */
+function normalizarTono(tono) {
+    if (!tono) return '';
+    // Convertir a mayúscula la primera letra
+    let normalizado = tono.charAt(0).toUpperCase() + tono.slice(1).toLowerCase();
+    // Mantener el # en mayúscula si existe
+    normalizado = normalizado.replace('sharp', '#').replace('Sharp', '#');
+    return normalizado;
 }
 
 /**
