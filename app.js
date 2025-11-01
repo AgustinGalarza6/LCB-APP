@@ -913,9 +913,9 @@ elementos.formCancion.addEventListener('submit', (e) => {
 // Cambio de tipo de búsqueda (actualiza placeholder)
 elementos.searchType.addEventListener('change', (e) => {
     const placeholders = {
-        'titulo': '🔍 Buscar por título o artista...',
-        'tono': '🎵 Buscar por tonalidad (Ej: Am, G, C)',
-        'tematica': '🏷️ Buscar por temática (Ej: adoración)'
+        'titulo': 'Buscar por título o artista...',
+        'tono': 'Buscar por tonalidad (Ej: Am, G, C)',
+        'tematica': 'Buscar por temática (Ej: adoración)'
     };
     elementos.inputBuscar.placeholder = placeholders[e.target.value];
     elementos.inputBuscar.value = '';
@@ -943,13 +943,23 @@ elementos.inputBuscar.addEventListener('input', (e) => {
             break;
         case 'tono':
             filtradas = canciones.filter(c => 
-                c.tono && c.tono.toLowerCase().replace(/\s/g, '') === searchValue.toLowerCase().replace(/\s/g, '')
+                c.tono && c.tono.toLowerCase().includes(searchValue.toLowerCase())
             );
             break;
         case 'tematica':
-            filtradas = canciones.filter(c => 
-                c.tematica && c.tematica.toLowerCase().includes(searchValue.toLowerCase())
-            );
+            filtradas = canciones.filter(c => {
+                // Buscar en el array de tematicas
+                if (c.tematicas && Array.isArray(c.tematicas)) {
+                    return c.tematicas.some(t => 
+                        t.toLowerCase().includes(searchValue.toLowerCase())
+                    );
+                }
+                // Fallback para formato antiguo (string)
+                if (c.tematica && typeof c.tematica === 'string') {
+                    return c.tematica.toLowerCase().includes(searchValue.toLowerCase());
+                }
+                return false;
+            });
             break;
     }
     
