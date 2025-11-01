@@ -526,6 +526,7 @@ body {
     align-items: flex-start;
     padding: 25px;
     background: #f8f9fa;
+    margin-bottom: 1.5rem;
 }
 
 .modal-header h2 {
@@ -1029,6 +1030,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 0.95rem;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .form-group h3 {
