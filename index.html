@@ -56,13 +56,23 @@
         </div>
     </section>
 
+    <!-- Contenedor de Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Spinner de carga -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
     <!-- Lista de Canciones -->
     <main class="container">
         <div id="listaCanciones" class="songs-grid">
             <!-- Las canciones se cargarán aquí dinámicamente -->
         </div>
-        <div id="mensajeVacio" class="mensaje-vacio">
-            <p>No hay canciones aún. ¡Agrega tu primera canción!</p>
+        <div id="mensajeVacio" class="mensaje-vacio" style="display: none;">
+            <p>🎵 No se encontraron canciones</p>
+            <small>Intenta con otros filtros o agrega una nueva canción</small>
         </div>
     </main>
 
@@ -87,6 +97,12 @@
                 <div class="form-group">
                     <label for="tono">Tono original (opcional)</label>
                     <input type="text" id="tono" placeholder="Ej: Am, G, C">
+                </div>
+
+                <div class="form-group">
+                    <label for="bpm">Tempo/BPM (opcional)</label>
+                    <input type="number" id="bpm" placeholder="Ej: 120" min="40" max="240">
+                    <small>Beats por minuto - útil para ensayos</small>
                 </div>
 
                 <div class="form-group">
@@ -303,17 +319,19 @@
                 <label for="filterTematica">Filtrar por temática</label>
                 <input id="filterTematica" type="text" placeholder="Ej: guerra espiritual">
                 <button id="btnFilterTematica" class="btn btn-small">Aplicar</button>
+                <hr>
+                <button id="btnLimpiarFiltros" class="btn btn-small btn-secondary" style="width: 100%; margin-top: 10px;">Limpiar Filtros</button>
             </div>
 
             <div class="panel-block">
                 <h4>Eventos</h4>
-                <button id="btnCrearEvento" class="btn btn-small">Nuevo Evento</button>
+                <button id="btnCrearEvento" class="btn btn-small">+ Nuevo Evento</button>
                 <div id="listaEventos"></div>
             </div>
 
             <div class="panel-block">
                 <h4>Playlists / Cronograma</h4>
-                <button id="btnCrearPlaylist" class="btn btn-small">Crear Cronograma</button>
+                <button id="btnCrearPlaylist" class="btn btn-small">+ Crear Cronograma</button>
                 <div id="listaPlaylists"></div>
             </div>
         </aside>

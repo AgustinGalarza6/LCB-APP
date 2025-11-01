@@ -43,6 +43,7 @@ const elementos = {
     inputTitulo: document.getElementById('titulo'),
     inputArtista: document.getElementById('artista'),
     inputTono: document.getElementById('tono'),
+    inputBpm: document.getElementById('bpm'),
     inputAcordes: document.getElementById('acordes'),
     inputLetra: document.getElementById('letra'),
     inputTematica: document.getElementById('tematica'),
@@ -52,10 +53,15 @@ const elementos = {
     btnFilterTono: document.getElementById('btnFilterTono'),
     filterTematica: document.getElementById('filterTematica'),
     btnFilterTematica: document.getElementById('btnFilterTematica'),
+    btnLimpiarFiltros: document.getElementById('btnLimpiarFiltros'),
     btnCrearEvento: document.getElementById('btnCrearEvento'),
     listaEventos: document.getElementById('listaEventos'),
     btnCrearPlaylist: document.getElementById('btnCrearPlaylist'),
     listaPlaylists: document.getElementById('listaPlaylists'),
+
+    // Toast y Loading
+    toastContainer: document.getElementById('toastContainer'),
+    loadingSpinner: document.getElementById('loadingSpinner'),
 
     // Panel lateral toggle
     btnTogglePanel: document.getElementById('btnTogglePanel'),
@@ -111,6 +117,53 @@ const elementos = {
     btnTransposeReset: document.getElementById('btnTransposeReset')
 };
 
+// === FUNCIONES DE UTILIDAD ===
+
+// Sistema de Toast Notifications
+function showToast(message, type = 'info', duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+    };
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <div class="toast-content">
+            <strong>${message}</strong>
+        </div>
+        <button class="toast-close">×</button>
+    `;
+    
+    elementos.toastContainer.appendChild(toast);
+    
+    // Cerrar al hacer click en X
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    });
+    
+    // Auto-cerrar después de duration
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
+// Mostrar/ocultar spinner de carga
+function showLoading() {
+    elementos.loadingSpinner.classList.add('active');
+}
+
+function hideLoading() {
+    elementos.loadingSpinner.classList.remove('active');
+}
+
 // === FUNCIONES DE FIREBASE ===
 async function cargarCanciones() {
     try {
@@ -151,11 +204,13 @@ function renderizarCanciones(filtro = '') {
     });
     
     if (cancionesFiltradas.length === 0) {
-        elementos.mensajeVacio.classList.add('visible');
+        elementos.mensajeVacio.style.display = 'block';
+        elementos.listaCanciones.style.display = 'none';
         return;
     }
     
-    elementos.mensajeVacio.classList.remove('visible');
+    elementos.mensajeVacio.style.display = 'none';
+    elementos.listaCanciones.style.display = 'grid';
     
     cancionesFiltradas.forEach(cancion => {
         const card = crearCardCancion(cancion);
@@ -168,10 +223,13 @@ function crearCardCancion(cancion) {
     card.className = 'song-card';
     card.onclick = () => mostrarCancion(cancion);
     
+    const tonoHtml = cancion.tono ? `<span class="tono">Tono: ${escapeHtml(cancion.tono)}</span>` : '';
+    const bpmHtml = cancion.bpm ? `<span class="bpm-badge">♩ ${cancion.bpm} BPM</span>` : '';
+    
     card.innerHTML = `
         <h3>${escapeHtml(cancion.titulo)}</h3>
-        <p class="artista"> ${escapeHtml(cancion.artista)}</p>
-        ${cancion.tono ? `<span class="tono">Tono: ${escapeHtml(cancion.tono)}</span>` : ''}
+        <p class="artista">${escapeHtml(cancion.artista)}</p>
+        <div>${tonoHtml}${bpmHtml}</div>
     `;
     
     return card;
@@ -207,13 +265,25 @@ function actualizarVistaCancion() {
     const tonoOriginal = cancionActual.tono || '';
     const tonoTranspuesto = tonoOriginal ? transponerAcorde(tonoOriginal, transposicion) : '';
     
+    let tonoTexto = '';
     if (tonoTranspuesto) {
-        elementos.verTono.textContent = transposicion === 0 
+        tonoTexto = transposicion === 0 
             ? `Tonalidad: ${tonoTranspuesto}` 
             : `Tonalidad: ${tonoTranspuesto} (Original: ${tonoOriginal})`;
-    } else {
-        elementos.verTono.textContent = '';
+        
+        // Sugerencia de capo
+        if (transposicion < 0) {
+            const capoPos = Math.abs(transposicion);
+            tonoTexto += ` <span class="capo-suggestion">💡 Capo en traste ${capoPos}</span>`;
+        }
     }
+    
+    // Agregar BPM si existe
+    if (cancionActual.bpm) {
+        tonoTexto += ` <span class="bpm-badge">♩ ${cancionActual.bpm} BPM</span>`;
+    }
+    
+    elementos.verTono.innerHTML = tonoTexto;
     
     // Para acordes: usar la letra con acordes transpuestos
     const acordesTranspuestos = transponerLetra(cancionActual.acordes || '', transposicion);
@@ -230,6 +300,7 @@ function actualizarVistaCancion() {
 async function aplicarFiltroTono() {
     const tonoInput = elementos.filterTono.value.trim();
     try {
+        showLoading();
         if (!tonoInput) {
             canciones = await obtenerCanciones();
         } else {
@@ -239,9 +310,14 @@ async function aplicarFiltroTono() {
             canciones = await obtenerCancionesPorTono(tonoNormalizado);
         }
         renderizarCanciones();
+        hideLoading();
+        if (tonoInput && canciones.length === 0) {
+            showToast(`No se encontraron canciones en tono ${tonoInput}`, 'info');
+        }
     } catch (err) {
+        hideLoading();
         console.error('Error al filtrar por tono', err);
-        alert('No se pudo filtrar por tono. Revisa la consola.');
+        showToast('Error al filtrar por tono', 'error');
     }
 }
 
@@ -263,15 +339,40 @@ function normalizarTono(tono) {
 async function aplicarFiltroTematica() {
     const tema = elementos.filterTematica.value.trim();
     try {
+        showLoading();
         if (!tema) {
             canciones = await obtenerCanciones();
         } else {
             canciones = await obtenerCancionesPorTematica(tema);
         }
         renderizarCanciones();
+        hideLoading();
+        if (tema && canciones.length === 0) {
+            showToast(`No se encontraron canciones con temática "${tema}"`, 'info');
+        }
     } catch (err) {
+        hideLoading();
         console.error('Error al filtrar por tematica', err);
-        alert('No se pudo filtrar por temática. Revisa la consola.');
+        showToast('Error al filtrar por temática', 'error');
+    }
+}
+
+/**
+ * Limpiar todos los filtros
+ */
+async function limpiarFiltros() {
+    elementos.filterTono.value = '';
+    elementos.filterTematica.value = '';
+    try {
+        showLoading();
+        canciones = await obtenerCanciones();
+        renderizarCanciones();
+        hideLoading();
+        showToast('Filtros eliminados', 'success');
+    } catch (err) {
+        hideLoading();
+        console.error('Error al limpiar filtros', err);
+        showToast('Error al limpiar filtros', 'error');
     }
 }
 
@@ -759,6 +860,7 @@ async function agregarCancion(datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
+            bpm: datos.bpm ? parseInt(datos.bpm) : null,
             acordes: datos.acordes,
             letra: datos.letra,
             // Guardar tematicas como array para facilitar queries
@@ -768,11 +870,11 @@ async function agregarCancion(datos) {
         };
         
         await agregarCancionFirestore(nuevaCancion);
-        // No necesitamos actualizar manualmente, el listener lo hará
+        showToast('Canción agregada exitosamente', 'success');
         console.log('Canción agregada exitosamente');
     } catch (error) {
         console.error('Error al agregar canción:', error);
-        alert('Error al guardar la canción. Intenta de nuevo.');
+        showToast('Error al guardar la canción', 'error');
     }
 }
 
@@ -783,6 +885,7 @@ async function actualizarCancion(id, datos) {
             titulo: datos.titulo,
             artista: datos.artista,
             tono: datos.tono,
+            bpm: datos.bpm ? parseInt(datos.bpm) : null,
             acordes: datos.acordes,
             letra: datos.letra,
             tematicas: tematicas,
@@ -790,22 +893,22 @@ async function actualizarCancion(id, datos) {
         };
         
         await actualizarCancionFirestore(id, datosActualizados);
-        // No necesitamos actualizar manualmente, el listener lo hará
+        showToast('Canción actualizada exitosamente', 'success');
         console.log('Canción actualizada exitosamente');
     } catch (error) {
         console.error('Error al actualizar canción:', error);
-        alert('Error al actualizar la canción. Intenta de nuevo.');
+        showToast('Error al actualizar la canción', 'error');
     }
 }
 
 async function eliminarCancion(id) {
     try {
         await eliminarCancionFirestore(id);
-        // No necesitamos actualizar manualmente, el listener lo hará
+        showToast('Canción eliminada', 'success');
         console.log('Canción eliminada exitosamente');
     } catch (error) {
         console.error('Error al eliminar canción:', error);
-        alert('Error al eliminar la canción. Intenta de nuevo.');
+        showToast('Error al eliminar la canción', 'error');
     }
 }
 
@@ -815,6 +918,7 @@ function editarCancion(cancion) {
     elementos.inputTitulo.value = cancion.titulo;
     elementos.inputArtista.value = cancion.artista;
     elementos.inputTono.value = cancion.tono || '';
+    elementos.inputBpm.value = cancion.bpm || '';
     elementos.inputAcordes.value = cancion.acordes || '';
     elementos.inputLetra.value = cancion.letra || '';
     // Recuperar tematicas desde array si existe
@@ -877,6 +981,7 @@ elementos.formCancion.addEventListener('submit', (e) => {
         titulo: elementos.inputTitulo.value.trim(),
         artista: elementos.inputArtista.value.trim(),
         tono: elementos.inputTono.value.trim(),
+        bpm: elementos.inputBpm.value.trim(),
         acordes: elementos.inputAcordes.value.trim(),
         letra: elementos.inputLetra.value.trim(),
         tematicas: elementos.inputTematica.value.split(',').map(s => s.trim()).filter(Boolean)
@@ -1054,6 +1159,27 @@ async function inicializarApp() {
     // Inicializar filtros y listas de eventos/playlists
     elementos.btnFilterTono.addEventListener('click', aplicarFiltroTono);
     elementos.btnFilterTematica.addEventListener('click', aplicarFiltroTematica);
+    elementos.btnLimpiarFiltros.addEventListener('click', limpiarFiltros);
+    
+    // Búsqueda en tiempo real con debounce (300ms)
+    let debounceTimer;
+    elementos.filterTono.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (elementos.filterTono.value.trim()) {
+                aplicarFiltroTono();
+            }
+        }, 300);
+    });
+    
+    elementos.filterTematica.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (elementos.filterTematica.value.trim()) {
+                aplicarFiltroTematica();
+            }
+        }, 300);
+    });
     elementos.btnCrearEvento.addEventListener('click', crearEventoCompleto);
     elementos.btnCrearPlaylist.addEventListener('click', crearPlaylistCompleto);
 
