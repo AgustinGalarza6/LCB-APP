@@ -1,13 +1,10 @@
 // === IMPORTS DE FIREBASE ===
 import { 
     obtenerCanciones, 
-    obtenerCancionesPorTono,
-    obtenerCancionesPorTematica,
     agregarCancionFirestore, 
     actualizarCancionFirestore, 
     eliminarCancionFirestore,
     escucharCambiosCanciones,
-    migrarLocalStorageAFirestore,
     crearEvento,
     obtenerEventos,
     actualizarEvento,
@@ -181,12 +178,6 @@ async function cargarCanciones() {
         console.error('Error al cargar canciones:', error);
         alert('Error al cargar las canciones. Verifica tu conexión.');
     }
-}
-
-// Ya no necesitamos guardarEnStorage porque Firebase guarda automáticamente
-function guardarEnStorage() {
-    // Función vacía para compatibilidad (ya no se usa)
-    console.log('Guardado en Firebase (automático)');
 }
 
 // === FUNCIONES DE RENDERIZADO ===

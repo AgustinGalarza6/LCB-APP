@@ -527,6 +527,7 @@ body {
     align-items: flex-start;
     padding: 25px;
     background: #f8f9fa;
+    margin-bottom: 1.5rem; 
 }
 
 .modal-header h2 {
