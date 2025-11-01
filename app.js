@@ -956,28 +956,15 @@ elementos.inputBuscar.addEventListener('input', (e) => {
     if (filtradas.length === 0) {
         elementos.listaCanciones.innerHTML = '';
         elementos.mensajeVacio.style.display = 'block';
+        elementos.listaCanciones.style.display = 'none';
     } else {
         elementos.mensajeVacio.style.display = 'none';
-        elementos.listaCanciones.innerHTML = filtradas.map(cancion => {
-            const tonoDisplay = cancion.tono ? `<span class="tono-badge">${cancion.tono}</span>` : '';
-            const bpmDisplay = cancion.bpm ? `<span class="bpm-badge">${cancion.bpm} BPM</span>` : '';
-            return `
-                <div class="song-card" data-id="${cancion.id}">
-                    <h3 class="song-title">${cancion.titulo}</h3>
-                    <p class="song-artist">${cancion.artista}</p>
-                    <div class="song-meta">
-                        ${tonoDisplay}
-                        ${bpmDisplay}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        elementos.listaCanciones.style.display = 'grid';
+        elementos.listaCanciones.innerHTML = '';
         
-        document.querySelectorAll('.song-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const id = card.dataset.id;
-                verCancion(id);
-            });
+        filtradas.forEach(cancion => {
+            const card = crearCardCancion(cancion);
+            elementos.listaCanciones.appendChild(card);
         });
     }
 });
