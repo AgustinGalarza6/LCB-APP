@@ -43,16 +43,25 @@
         </div>
     </header>
 
-    <!-- Buscador -->
+    <!-- Buscador y Filtros -->
     <section class="search-section">
         <div class="container">
             <h3 class="search-title">Buscar Canciones</h3>
-            <input 
-                type="text" 
-                id="inputBuscar" 
-                class="search-input" 
-                placeholder="Buscar por título o artista..."
-            >
+            <div class="search-filters-container">
+                <div class="search-with-select">
+                    <select id="searchType" class="search-select">
+                        <option value="titulo">Título/Artista</option>
+                        <option value="tono">Tonalidad</option>
+                        <option value="tematica">Temática</option>
+                    </select>
+                    <input 
+                        type="text" 
+                        id="inputBuscar" 
+                        class="search-input main-search" 
+                        placeholder="Buscar por título o artista..."
+                    >
+                </div>
+            </div>
         </div>
     </section>
 
@@ -151,8 +160,8 @@
                         <p class="artista-info" id="verArtista"></p>
                     </div>
                     <div class="song-actions-inline">
-                        <button id="btnEditarCancion" class="btn btn-small">Editar</button>
-                        <button id="btnEliminarCancion" class="btn btn-small btn-danger">Eliminar</button>
+                        <button id="btnEditarCancion" class="btn btn-small btn-icon-action" title="Editar">✏️</button>
+                        <button id="btnEliminarCancion" class="btn btn-small btn-danger btn-icon-action" title="Eliminar">🗑️</button>
                     </div>
                 </div>
                 <button class="btn-cerrar" id="btnCerrarModalVer">&times;</button>
@@ -303,24 +312,11 @@
         <!-- Overlay para el panel en móviles -->
         <div class="panel-overlay" id="panelOverlay"></div>
 
-        <!-- Panel lateral: filtros y eventos/playlists -->
+        <!-- Panel lateral: eventos y playlists -->
         <aside class="panel-side" id="panelSide">
             <div class="panel-header-mobile">
-                <h3>Filtros y Eventos</h3>
+                <h3>Eventos y Cronogramas</h3>
                 <button id="btnCerrarPanel" class="btn-cerrar-panel">✕</button>
-            </div>
-
-            <div class="panel-block">
-                <h4>Filtros</h4>
-                <label for="filterTono">Filtrar por tono</label>
-                <input id="filterTono" type="text" placeholder="Ej: A, Am, G#">
-                <button id="btnFilterTono" class="btn btn-small">Aplicar</button>
-                <hr>
-                <label for="filterTematica">Filtrar por temática</label>
-                <input id="filterTematica" type="text" placeholder="Ej: guerra espiritual">
-                <button id="btnFilterTematica" class="btn btn-small">Aplicar</button>
-                <hr>
-                <button id="btnLimpiarFiltros" class="btn btn-small btn-secondary" style="width: 100%; margin-top: 10px;">Limpiar Filtros</button>
             </div>
 
             <div class="panel-block">

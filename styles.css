@@ -19,7 +19,7 @@ body {
 
 /* Header */
 .header {
-    background: #000000;
+    background: #ffffff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 1rem 0;
     position: sticky;
@@ -35,7 +35,7 @@ body {
 
 .logo {
     font-size: 1.6rem;
-    color: #ffffff;
+    color: #333;
     font-weight: normal;
 }
 
@@ -45,19 +45,130 @@ body {
     gap: 10px;
 }
 
-/* Buscador */
+/* Buscador y Filtros */
 .search-section {
     padding: 2rem 0;
-    background: white;
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200') center/cover;
     border-bottom: 1px solid #ddd;
 }
 
 .search-title {
     text-align: center;
-    color: #2c3e50;
-    font-size: 1.5rem;
+    color: white;
+    font-size: 2rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
+}
+
+.search-filters-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-with-select {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    overflow: hidden;
+    background: white;
+}
+
+.search-select {
+    padding: 14px 16px;
+    font-size: 1rem;
+    border: none;
+    background: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    border-right: 2px solid #e0e0e0;
+    min-width: 140px;
+    transition: background 0.3s;
+}
+
+.search-select:hover {
+    background: #e9ecef;
+}
+
+.search-select:focus {
+    background: #dee2e6;
+}
+
+.main-search {
+    flex: 1;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    transition: box-shadow 0.3s;
+}
+
+.search-with-select:focus-within {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.filters-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.filter-pill {
+    background: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 180px;
+    max-width: 250px;
+}
+
+.filter-pill label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+.filter-pill input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    padding: 4px 8px;
+    min-width: 0;
+}
+
+.btn-show-all {
+    background: white;
+    color: #667eea;
+    border: 2px solid white;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.btn-show-all:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .search-input {
@@ -65,12 +176,9 @@ body {
     max-width: 600px;
     padding: 12px 20px;
     font-size: 1rem;
-    border: 2px solid #ddd;
-    border-radius: 4px;
     box-shadow: none;
     outline: none;
     display: block;
-    margin: 0 auto;
 }
 
 .search-input:focus {
@@ -307,8 +415,8 @@ body {
 
 .btn-icon {
     background: transparent;
-    color: white;
-    border: 1px solid white;
+    color: #333;
+    border: 1px solid #333;
     padding: 8px 16px;
     font-size: 1.4rem;
     border-radius: 4px;
@@ -320,7 +428,7 @@ body {
 }
 
 .btn-icon:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 @media (min-width: 1000px) {
@@ -416,7 +524,6 @@ body {
     padding: 25px;
     border-bottom: 1px solid #e0e0e0;
     background: #f8f9fa;
-    margin-bottom: 0;
 }
 
 .modal-header h2 {
@@ -515,11 +622,17 @@ body {
     margin-top: 4px;
 }
 
+.btn-icon-action {
+    font-size: 1.3rem;
+    padding: 8px 12px !important;
+    min-width: 44px;
+}
+
 .transpose-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 25px;
+    padding: 10px 25px;
     background: #f8f9fa;
     border-bottom: 1px solid #e0e0e0;
     flex-wrap: wrap;
@@ -611,8 +724,6 @@ body {
 
 .linea-letra {
     color: #2c3e50;
-    line-height: 1.6;
-    margin-bottom: 0.3rem;
     font-family: Arial, Helvetica, sans-serif;
     white-space: pre;
     font-weight: normal;
@@ -676,21 +787,63 @@ body {
     }
     
     .song-actions-inline {
-        width: 100%;
+        width: 20px; /* NO MODIFICAR */
+        justify-content: flex-start;
     }
     
-    .song-actions-inline .btn {
-        flex: 1;
+    .song-actions-inline .btn-icon-action {
+        flex: 0 0 auto;
+        min-width: 38px;
+        padding: 4px 4px !important;
+        font-size: 1rem;
     }
     
     .transpose-section {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 15px;
+        gap: 10px;
+    }
+    
+    .tono-info {
+        font-size: 0.85rem;
     }
     
     .transpose-controls {
+        flex: 0 0 auto;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-left: auto;
+    }
+    
+    .transpose-label {
+        font-size: 0.75rem;
+        margin-right: 3px;
+    }
+    
+    .btn-transpose {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        min-width: auto;
+        width: auto;
+    }
+    
+    .search-filters-container {
+        padding: 0 15px;
+    }
+    
+    .filters-row {
+        flex-direction: column;
         width: 100%;
-        justify-content: center;
+    }
+    
+    .filter-pill {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .btn-show-all {
+        width: 100%;
     }
 }
 

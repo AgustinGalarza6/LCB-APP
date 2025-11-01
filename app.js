@@ -30,6 +30,7 @@ const elementos = {
     listaCanciones: document.getElementById('listaCanciones'),
     mensajeVacio: document.getElementById('mensajeVacio'),
     inputBuscar: document.getElementById('inputBuscar'),
+    searchType: document.getElementById('searchType'),
     
     // Modal Agregar/Editar
     modalCancion: document.getElementById('modalCancion'),
@@ -48,12 +49,7 @@ const elementos = {
     inputLetra: document.getElementById('letra'),
     inputTematica: document.getElementById('tematica'),
 
-    // Panel lateral (filtros, eventos, playlists)
-    filterTono: document.getElementById('filterTono'),
-    btnFilterTono: document.getElementById('btnFilterTono'),
-    filterTematica: document.getElementById('filterTematica'),
-    btnFilterTematica: document.getElementById('btnFilterTematica'),
-    btnLimpiarFiltros: document.getElementById('btnLimpiarFiltros'),
+    // Panel lateral (eventos, playlists)
     btnCrearEvento: document.getElementById('btnCrearEvento'),
     listaEventos: document.getElementById('listaEventos'),
     btnCrearPlaylist: document.getElementById('btnCrearPlaylist'),
@@ -292,88 +288,6 @@ function actualizarVistaCancion() {
     // Para letra: usar solo la letra sin acordes (no transponer)
     const letraSola = cancionActual.letra || '';
     elementos.verLetra.innerHTML = letraSola.split('\n').map(l => l === '' ? '<div class="linea-vacia"></div>' : `<div class="linea-letra">${escapeHtml(l)}</div>`).join('');
-}
-
-/**
- * Aplicar filtro por tono usando Firestore
- */
-async function aplicarFiltroTono() {
-    const tonoInput = elementos.filterTono.value.trim();
-    try {
-        showLoading();
-        if (!tonoInput) {
-            canciones = await obtenerCanciones();
-        } else {
-            // Normalizar el tono: primera letra mayúscula, resto minúscula (excepto # y m)
-            // Ejemplos: "d" -> "D", "am" -> "Am", "g#" -> "G#"
-            const tonoNormalizado = normalizarTono(tonoInput);
-            canciones = await obtenerCancionesPorTono(tonoNormalizado);
-        }
-        renderizarCanciones();
-        hideLoading();
-        if (tonoInput && canciones.length === 0) {
-            showToast(`No se encontraron canciones en tono ${tonoInput}`, 'info');
-        }
-    } catch (err) {
-        hideLoading();
-        console.error('Error al filtrar por tono', err);
-        showToast('Error al filtrar por tono', 'error');
-    }
-}
-
-/**
- * Normaliza un tono para búsqueda (D, Am, G#, etc.)
- */
-function normalizarTono(tono) {
-    if (!tono) return '';
-    // Convertir a mayúscula la primera letra
-    let normalizado = tono.charAt(0).toUpperCase() + tono.slice(1).toLowerCase();
-    // Mantener el # en mayúscula si existe
-    normalizado = normalizado.replace('sharp', '#').replace('Sharp', '#');
-    return normalizado;
-}
-
-/**
- * Aplicar filtro por tematica (busca en el array tematicas)
- */
-async function aplicarFiltroTematica() {
-    const tema = elementos.filterTematica.value.trim();
-    try {
-        showLoading();
-        if (!tema) {
-            canciones = await obtenerCanciones();
-        } else {
-            canciones = await obtenerCancionesPorTematica(tema);
-        }
-        renderizarCanciones();
-        hideLoading();
-        if (tema && canciones.length === 0) {
-            showToast(`No se encontraron canciones con temática "${tema}"`, 'info');
-        }
-    } catch (err) {
-        hideLoading();
-        console.error('Error al filtrar por tematica', err);
-        showToast('Error al filtrar por temática', 'error');
-    }
-}
-
-/**
- * Limpiar todos los filtros
- */
-async function limpiarFiltros() {
-    elementos.filterTono.value = '';
-    elementos.filterTematica.value = '';
-    try {
-        showLoading();
-        canciones = await obtenerCanciones();
-        renderizarCanciones();
-        hideLoading();
-        showToast('Filtros eliminados', 'success');
-    } catch (err) {
-        hideLoading();
-        console.error('Error al limpiar filtros', err);
-        showToast('Error al limpiar filtros', 'error');
-    }
 }
 
 // === GESTIÓN DE EVENTOS (eventos masivos) ===
@@ -996,9 +910,76 @@ elementos.formCancion.addEventListener('submit', (e) => {
     cerrarModal(elementos.modalCancion);
 });
 
-// Buscador en tiempo real
+// Cambio de tipo de búsqueda (actualiza placeholder)
+elementos.searchType.addEventListener('change', (e) => {
+    const placeholders = {
+        'titulo': '🔍 Buscar por título o artista...',
+        'tono': '🎵 Buscar por tonalidad (Ej: Am, G, C)',
+        'tematica': '🏷️ Buscar por temática (Ej: adoración)'
+    };
+    elementos.inputBuscar.placeholder = placeholders[e.target.value];
+    elementos.inputBuscar.value = '';
+    renderizarCanciones();
+});
+
+// Buscador en tiempo real unificado
 elementos.inputBuscar.addEventListener('input', (e) => {
-    renderizarCanciones(e.target.value);
+    const searchValue = e.target.value.trim();
+    const searchType = elementos.searchType.value;
+    
+    if (!searchValue) {
+        renderizarCanciones();
+        return;
+    }
+    
+    let filtradas = canciones;
+    
+    switch(searchType) {
+        case 'titulo':
+            filtradas = canciones.filter(c => 
+                c.titulo.toLowerCase().includes(searchValue.toLowerCase()) ||
+                c.artista.toLowerCase().includes(searchValue.toLowerCase())
+            );
+            break;
+        case 'tono':
+            filtradas = canciones.filter(c => 
+                c.tono && c.tono.toLowerCase().replace(/\s/g, '') === searchValue.toLowerCase().replace(/\s/g, '')
+            );
+            break;
+        case 'tematica':
+            filtradas = canciones.filter(c => 
+                c.tematica && c.tematica.toLowerCase().includes(searchValue.toLowerCase())
+            );
+            break;
+    }
+    
+    if (filtradas.length === 0) {
+        elementos.listaCanciones.innerHTML = '';
+        elementos.mensajeVacio.style.display = 'block';
+    } else {
+        elementos.mensajeVacio.style.display = 'none';
+        elementos.listaCanciones.innerHTML = filtradas.map(cancion => {
+            const tonoDisplay = cancion.tono ? `<span class="tono-badge">${cancion.tono}</span>` : '';
+            const bpmDisplay = cancion.bpm ? `<span class="bpm-badge">${cancion.bpm} BPM</span>` : '';
+            return `
+                <div class="song-card" data-id="${cancion.id}">
+                    <h3 class="song-title">${cancion.titulo}</h3>
+                    <p class="song-artist">${cancion.artista}</p>
+                    <div class="song-meta">
+                        ${tonoDisplay}
+                        ${bpmDisplay}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.song-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.dataset.id;
+                verCancion(id);
+            });
+        });
+    }
 });
 
 // Botones de transposición
@@ -1156,30 +1137,6 @@ async function inicializarApp() {
         elementos.panelOverlay.classList.remove('active');
     });
 
-    // Inicializar filtros y listas de eventos/playlists
-    elementos.btnFilterTono.addEventListener('click', aplicarFiltroTono);
-    elementos.btnFilterTematica.addEventListener('click', aplicarFiltroTematica);
-    elementos.btnLimpiarFiltros.addEventListener('click', limpiarFiltros);
-    
-    // Búsqueda en tiempo real con debounce (300ms)
-    let debounceTimer;
-    elementos.filterTono.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            if (elementos.filterTono.value.trim()) {
-                aplicarFiltroTono();
-            }
-        }, 300);
-    });
-    
-    elementos.filterTematica.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            if (elementos.filterTematica.value.trim()) {
-                aplicarFiltroTematica();
-            }
-        }, 300);
-    });
     elementos.btnCrearEvento.addEventListener('click', crearEventoCompleto);
     elementos.btnCrearPlaylist.addEventListener('click', crearPlaylistCompleto);
 
