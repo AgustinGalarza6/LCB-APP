@@ -38,8 +38,8 @@
         <div class="container">
             <h1 class="logo">LCB WORSHIP</h1>
             <nav class="nav">
-                <button id="btnExportar" class="btn btn-secondary" title="Exportar/Importar" aria-label="Exportar e importar canciones">
-                    <i class="bi bi-download"></i>
+                <button id="btnModoOscuro" class="btn btn-icon btn-theme-toggle" title="Modo Oscuro" aria-label="Cambiar a modo oscuro">
+                    <i class="bi bi-moon-fill"></i>
                 </button>
                 <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
                 <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos" aria-label="Abrir panel de eventos y cronogramas">☰</button>
@@ -65,12 +65,6 @@
                         class="search-input main-search" 
                         placeholder="Buscar por título o artista..."
                     >
-                </div>
-                <div style="margin-top: 10px;">
-                    <button id="btnModoOscuro" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
-                        <i class="bi bi-moon-fill"></i>
-                        <span>Modo Oscuro</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -409,6 +403,13 @@
                 <h4>Playlists / Cronograma</h4>
                 <button id="btnCrearPlaylist" class="btn btn-small">+ Crear Cronograma</button>
                 <div id="listaPlaylists"></div>
+            </div>
+            
+            <div class="panel-block">
+                <h4>Exportar / Importar</h4>
+                <button id="btnExportar" class="btn btn-small" style="width: 100%; margin-bottom: 8px;">
+                    <i class="bi bi-download"></i> Exportar/Importar
+                </button>
             </div>
         </aside>
 

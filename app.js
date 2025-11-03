@@ -207,14 +207,13 @@ function toggleModoOscuro() {
     localStorage.setItem('modoOscuro', modoOscuro);
     
     const icon = elementos.btnModoOscuro.querySelector('i');
-    const text = elementos.btnModoOscuro.querySelector('span');
     
     if (modoOscuro) {
         icon.className = 'bi bi-sun-fill';
-        text.textContent = 'Modo Claro';
+        elementos.btnModoOscuro.title = 'Cambiar a modo claro';
     } else {
         icon.className = 'bi bi-moon-fill';
-        text.textContent = 'Modo Oscuro';
+        elementos.btnModoOscuro.title = 'Cambiar a modo oscuro';
     }
 }
 
@@ -222,9 +221,8 @@ function aplicarModoOscuro() {
     if (modoOscuro) {
         document.body.classList.add('dark-mode');
         const icon = elementos.btnModoOscuro.querySelector('i');
-        const text = elementos.btnModoOscuro.querySelector('span');
         icon.className = 'bi bi-sun-fill';
-        text.textContent = 'Modo Claro';
+        elementos.btnModoOscuro.title = 'Cambiar a modo claro';
     }
 }
 
