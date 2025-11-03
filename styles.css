@@ -527,7 +527,18 @@ body {
     align-items: flex-start;
     padding: 25px;
     background: #f8f9fa;
-    margin-bottom: 1.5rem; 
+}
+
+/* Clases específicas para modales de Evento y Cronograma */
+.modal-header-evento,
+.modal-header-playlist {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 25px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 1.5rem;
 }
 
 .modal-header h2 {
@@ -749,7 +760,8 @@ body {
     color: #2c3e50;
     line-height: 1.3;
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
     font-weight: 600;
     font-size: 1.05rem;
 }
@@ -757,7 +769,8 @@ body {
 .linea-letra {
     color: #2c3e50;
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
     font-weight: 600;
     font-size: 1.05rem;
     line-height: 1.5;
@@ -774,7 +787,8 @@ body {
     line-height: 1.6;
     font-family: Arial, Helvetica, sans-serif;
     margin-bottom: 0.3rem;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .linea-acordes-sola .acorde {
@@ -875,6 +889,29 @@ body {
     
     .btn-show-all {
         width: 100%;
+    }
+    
+    /* Ajuste de texto en móviles */
+    .song-content {
+        padding: 15px;
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+    
+    .linea-texto,
+    .linea-letra,
+    .linea-acordes-sola {
+        font-size: 0.95rem;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    .linea-acordes {
+        font-size: 0.95rem;
+        white-space: pre-wrap;
+        word-wrap: break-word;
     }
 }
 
