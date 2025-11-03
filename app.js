@@ -116,6 +116,12 @@ const elementos = {
     // Modo Oscuro
     btnModoOscuro: document.getElementById('btnModoOscuro'),
     
+    // Favoritos
+    btnVerFavoritos: document.getElementById('btnVerFavoritos'),
+    favoritosBadge: document.getElementById('favoritosBadge'),
+    searchSection: document.getElementById('searchSection'),
+    searchTitleMain: document.getElementById('searchTitleMain'),
+    
     // Compartir
     modalCompartir: document.getElementById('modalCompartir'),
     btnCerrarModalCompartir: document.getElementById('btnCerrarModalCompartir'),
@@ -175,6 +181,8 @@ function showToast(message, type = 'info', duration = 3000) {
 }
 
 // === SISTEMA DE FAVORITOS ===
+let vistaFavoritosActiva = false;
+
 function toggleFavorito(cancionId) {
     const index = favoritos.indexOf(cancionId);
     if (index > -1) {
@@ -184,6 +192,7 @@ function toggleFavorito(cancionId) {
     }
     localStorage.setItem('favoritos', JSON.stringify(favoritos));
     actualizarBotonFavorito(cancionId);
+    actualizarBadgeFavoritos();
     renderizarCanciones();
 }
 
@@ -198,6 +207,45 @@ function actualizarBotonFavorito(cancionId) {
     elementos.btnFavorito.classList.toggle('active', esFav);
     elementos.btnFavorito.querySelector('i').className = esFav ? 'bi bi-star-fill' : 'bi bi-star';
     elementos.btnFavorito.title = esFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+}
+
+function actualizarBadgeFavoritos() {
+    const count = favoritos.length;
+    elementos.favoritosBadge.textContent = count;
+    elementos.favoritosBadge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+function toggleVistaFavoritos() {
+    vistaFavoritosActiva = !vistaFavoritosActiva;
+    
+    // Toggle clase en botón
+    elementos.btnVerFavoritos.classList.toggle('active', vistaFavoritosActiva);
+    
+    // Toggle clase en search section
+    elementos.searchSection.classList.toggle('favoritos-view', vistaFavoritosActiva);
+    
+    if (vistaFavoritosActiva) {
+        // Cambiar título
+        elementos.searchTitleMain.innerHTML = '<span class="favoritos-icon">⭐</span> Mis Canciones Favoritas';
+        
+        // Ocultar controles de búsqueda
+        elementos.searchType.parentElement.style.display = 'none';
+        
+        // Limpiar input de búsqueda
+        elementos.inputBuscar.value = '';
+    } else {
+        // Restaurar título
+        elementos.searchTitleMain.textContent = 'Buscar Canciones';
+        
+        // Mostrar controles de búsqueda
+        elementos.searchType.parentElement.style.display = 'flex';
+        
+        // Limpiar input de búsqueda
+        elementos.inputBuscar.value = '';
+    }
+    
+    // Re-renderizar canciones SIN filtro
+    renderizarCanciones('');
 }
 
 // === MODO OSCURO ===
@@ -344,15 +392,41 @@ async function cargarCanciones() {
 function renderizarCanciones(filtro = '') {
     elementos.listaCanciones.innerHTML = '';
     
-    const cancionesFiltradas = canciones.filter(cancion => {
-        const textoFiltro = filtro.toLowerCase();
-        return cancion.titulo.toLowerCase().includes(textoFiltro) ||
-                cancion.artista.toLowerCase().includes(textoFiltro);
-    });
+    let cancionesFiltradas;
+    
+    // Si está activa la vista de favoritos, mostrar solo favoritos
+    if (vistaFavoritosActiva) {
+        cancionesFiltradas = canciones.filter(cancion => esFavorito(cancion.id));
+        
+        // Opcionalmente filtrar dentro de favoritos
+        if (filtro) {
+            const textoFiltro = filtro.toLowerCase();
+            cancionesFiltradas = cancionesFiltradas.filter(cancion =>
+                cancion.titulo.toLowerCase().includes(textoFiltro) ||
+                cancion.artista.toLowerCase().includes(textoFiltro)
+            );
+        }
+    } else {
+        // Vista normal con filtro
+        cancionesFiltradas = canciones.filter(cancion => {
+            const textoFiltro = filtro.toLowerCase();
+            return cancion.titulo.toLowerCase().includes(textoFiltro) ||
+                    cancion.artista.toLowerCase().includes(textoFiltro);
+        });
+    }
     
     if (cancionesFiltradas.length === 0) {
         elementos.mensajeVacio.style.display = 'block';
         elementos.listaCanciones.style.display = 'none';
+        
+        // Mensaje personalizado para favoritos
+        if (vistaFavoritosActiva && favoritos.length === 0) {
+            elementos.mensajeVacio.innerHTML = '<p>⭐ No tienes canciones favoritas aún</p><small>Marca canciones como favoritas para verlas aquí</small>';
+        } else if (vistaFavoritosActiva) {
+            elementos.mensajeVacio.innerHTML = '<p>No se encontraron canciones favoritas con ese filtro</p>';
+        } else {
+            elementos.mensajeVacio.innerHTML = '<p>No se encontraron canciones</p><small>Intenta con otros filtros o agrega una nueva canción</small>';
+        }
         return;
     }
     
@@ -1074,19 +1148,11 @@ elementos.searchType.addEventListener('change', (e) => {
     const placeholders = {
         'titulo': 'Buscar por título o artista...',
         'tono': 'Buscar por tonalidad (Ej: Am, G, C)',
-        'tematica': 'Buscar por temática (Ej: adoración)',
-        'favoritos': '⭐ Mostrando favoritas'
+        'tematica': 'Buscar por temática (Ej: adoración)'
     };
     elementos.inputBuscar.placeholder = placeholders[e.target.value];
-    
-    // Si cambiamos a favoritos, disparar búsqueda automática
-    if (e.target.value === 'favoritos') {
-        elementos.inputBuscar.value = '';
-        elementos.inputBuscar.dispatchEvent(new Event('input'));
-    } else {
-        elementos.inputBuscar.value = '';
-        renderizarCanciones();
-    }
+    elementos.inputBuscar.value = '';
+    renderizarCanciones();
 });
 
 // Buscador en tiempo real unificado
@@ -1094,11 +1160,19 @@ elementos.inputBuscar.addEventListener('input', (e) => {
     const searchValue = e.target.value.trim();
     const searchType = elementos.searchType.value;
     
-    if (!searchValue && searchType !== 'favoritos') {
-        renderizarCanciones();
+    // Si estamos en vista favoritos, usar búsqueda simple dentro de favoritos
+    if (vistaFavoritosActiva) {
+        renderizarCanciones(searchValue);
         return;
     }
     
+    // Vista normal - si no hay búsqueda, mostrar todas
+    if (!searchValue) {
+        renderizarCanciones('');
+        return;
+    }
+    
+    // Aplicar búsqueda según tipo
     let filtradas = canciones;
     
     switch(searchType) {
@@ -1128,19 +1202,17 @@ elementos.inputBuscar.addEventListener('input', (e) => {
                 return false;
             });
             break;
-        case 'favoritos':
-            filtradas = canciones.filter(c => esFavorito(c.id));
-            break;
     }
     
+    // Renderizar con las canciones filtradas manualmente
+    elementos.listaCanciones.innerHTML = '';
+    
     if (filtradas.length === 0) {
-        elementos.listaCanciones.innerHTML = '';
         elementos.mensajeVacio.style.display = 'block';
         elementos.listaCanciones.style.display = 'none';
     } else {
         elementos.mensajeVacio.style.display = 'none';
         elementos.listaCanciones.style.display = 'grid';
-        elementos.listaCanciones.innerHTML = '';
         
         filtradas.forEach(cancion => {
             const card = crearCardCancion(cancion);
@@ -1357,6 +1429,12 @@ async function inicializarApp() {
             renderizarCanciones(); // Actualizar cards con estrella
         }
     });
+    
+    // Botón Ver Favoritos en Header
+    elementos.btnVerFavoritos.addEventListener('click', toggleVistaFavoritos);
+    
+    // Actualizar badge de favoritos al inicio
+    actualizarBadgeFavoritos();
     
     // Modo Oscuro
     elementos.btnModoOscuro.addEventListener('click', toggleModoOscuro);

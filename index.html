@@ -41,6 +41,10 @@
                 <button id="btnModoOscuro" class="btn btn-icon btn-theme-toggle" title="Modo Oscuro" aria-label="Cambiar a modo oscuro">
                     <i class="bi bi-moon-fill"></i>
                 </button>
+                <button id="btnVerFavoritos" class="btn btn-favoritos-header" title="Ver mis favoritas">
+                    <i class="bi bi-star-fill"></i>
+                    <span class="favoritos-badge" id="favoritosBadge">0</span>
+                </button>
                 <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
                 <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos" aria-label="Abrir panel de eventos y cronogramas">☰</button>
             </nav>
@@ -48,16 +52,15 @@
     </header>
 
     <!-- Buscador y Filtros -->
-    <section class="search-section">
+    <section class="search-section" id="searchSection">
         <div class="container">
-            <h3 class="search-title">Buscar Canciones</h3>
+            <h3 class="search-title" id="searchTitleMain">Buscar Canciones</h3>
             <div class="search-filters-container">
                 <div class="search-with-select">
                     <select id="searchType" class="search-select">
                         <option value="titulo">Título/Artista</option>
                         <option value="tono">Tonalidad</option>
                         <option value="tematica">Temática</option>
-                        <option value="favoritos">⭐ Favoritas</option>
                     </select>
                     <input 
                         type="text" 

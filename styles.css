@@ -52,6 +52,15 @@ body {
         linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
         url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200') center/cover;
     border-bottom: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+/* Vista de Favoritos activada */
+.search-section.favoritos-view {
+    background: 
+        linear-gradient(135deg, rgba(52, 152, 219, 0.9) 0%, rgba(41, 128, 185, 0.95) 100%),
+        url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200') center/cover;
+    border-bottom: 3px solid #3498db;
 }
 
 .search-title {
@@ -60,6 +69,17 @@ body {
     font-size: 2.5rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-title .favoritos-icon {
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .search-filters-container {
@@ -388,6 +408,67 @@ body.dark-mode .btn-theme-toggle {
 
 body.dark-mode .btn-theme-toggle:hover {
     background: #ffed4e;
+}
+
+/* Botón de Favoritos en Header */
+.btn-favoritos-header {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    transition: all 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.btn-favoritos-header:hover {
+    background:#ffffff;
+    transform: scale(1.05);
+}
+
+.btn-favoritos-header.active {
+    background: #333;
+    border-color: #000000;
+    color: rgb(0, 0, 0);
+    box-shadow: #ffffff;
+}
+
+.favoritos-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #000000;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border: 2px solid white;
+}
+
+body.dark-mode .favoritos-badge {
+    border-color: #2c2c2c;
+}
+
+body.dark-mode .btn-favoritos-header {
+    background: #2c2c2c;
+    color: #ffed4e;
+    border-color: #ffed4e;
+}
+
+body.dark-mode .btn-favoritos-header:hover {
+    background: #333;
 }
 
 @media (min-width: 1000px) {
@@ -774,6 +855,17 @@ body.dark-mode .btn-theme-toggle:hover {
     .btn-primary {
         font-size: 0.9rem;
         padding: 8px 12px;
+    }
+    
+    .btn-theme-toggle,
+    .btn-favoritos-header {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 6px;
+    }
+    
+    .btn-favoritos-header {
+        font-size: 1rem;
     }
     
     .btn-theme-toggle {
