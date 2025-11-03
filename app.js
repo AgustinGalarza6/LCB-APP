@@ -21,6 +21,8 @@ let transposicion = 0;
 let unsubscribeListener = null;
 let eventoActual = null; // Para gestionar eventos masivos
 let playlistActual = null; // Para gestionar cronogramas/playlists
+let favoritos = JSON.parse(localStorage.getItem('favoritos')) || [];
+let modoOscuro = localStorage.getItem('modoOscuro') === 'true';
 
 // === ELEMENTOS DEL DOM ===
 const elementos = {
@@ -103,11 +105,35 @@ const elementos = {
     verAcordes: document.getElementById('verAcordes'),
     btnEditarCancion: document.getElementById('btnEditarCancion'),
     btnEliminarCancion: document.getElementById('btnEliminarCancion'),
+    btnFavorito: document.getElementById('btnFavorito'),
+    btnCompartir: document.getElementById('btnCompartir'),
     
     // Transposición
     btnTransposeUp: document.getElementById('btnTransposeUp'),
     btnTransposeDown: document.getElementById('btnTransposeDown'),
-    btnTransposeReset: document.getElementById('btnTransposeReset')
+    btnTransposeReset: document.getElementById('btnTransposeReset'),
+    
+    // Modo Oscuro
+    btnModoOscuro: document.getElementById('btnModoOscuro'),
+    
+    // Compartir
+    modalCompartir: document.getElementById('modalCompartir'),
+    btnCerrarModalCompartir: document.getElementById('btnCerrarModalCompartir'),
+    compartirTitulo: document.getElementById('compartirTitulo'),
+    compartirArtista: document.getElementById('compartirArtista'),
+    btnCompartirWhatsApp: document.getElementById('btnCompartirWhatsApp'),
+    btnCompartirTelegram: document.getElementById('btnCompartirTelegram'),
+    btnCopiarEnlace: document.getElementById('btnCopiarEnlace'),
+    qrCanvas: document.getElementById('qrCanvas'),
+    
+    // Exportar/Importar
+    btnExportar: document.getElementById('btnExportar'),
+    modalExportar: document.getElementById('modalExportar'),
+    btnCerrarModalExportar: document.getElementById('btnCerrarModalExportar'),
+    btnExportarPDF: document.getElementById('btnExportarPDF'),
+    btnExportarJSON: document.getElementById('btnExportarJSON'),
+    btnImportar: document.getElementById('btnImportar'),
+    inputImportar: document.getElementById('inputImportar')
 };
 
 // === FUNCIONES DE UTILIDAD ===
@@ -146,6 +172,142 @@ function showToast(message, type = 'info', duration = 3000) {
             setTimeout(() => toast.remove(), 300);
         }
     }, duration);
+}
+
+// === SISTEMA DE FAVORITOS ===
+function toggleFavorito(cancionId) {
+    const index = favoritos.indexOf(cancionId);
+    if (index > -1) {
+        favoritos.splice(index, 1);
+    } else {
+        favoritos.push(cancionId);
+    }
+    localStorage.setItem('favoritos', JSON.stringify(favoritos));
+    actualizarBotonFavorito(cancionId);
+    renderizarCanciones();
+}
+
+function esFavorito(cancionId) {
+    return favoritos.includes(cancionId);
+}
+
+function actualizarBotonFavorito(cancionId) {
+    if (!cancionActual || cancionActual.id !== cancionId) return;
+    
+    const esFav = esFavorito(cancionId);
+    elementos.btnFavorito.classList.toggle('active', esFav);
+    elementos.btnFavorito.querySelector('i').className = esFav ? 'bi bi-star-fill' : 'bi bi-star';
+    elementos.btnFavorito.title = esFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+}
+
+// === MODO OSCURO ===
+function toggleModoOscuro() {
+    modoOscuro = !modoOscuro;
+    document.body.classList.toggle('dark-mode', modoOscuro);
+    localStorage.setItem('modoOscuro', modoOscuro);
+    
+    const icon = elementos.btnModoOscuro.querySelector('i');
+    const text = elementos.btnModoOscuro.querySelector('span');
+    
+    if (modoOscuro) {
+        icon.className = 'bi bi-sun-fill';
+        text.textContent = 'Modo Claro';
+    } else {
+        icon.className = 'bi bi-moon-fill';
+        text.textContent = 'Modo Oscuro';
+    }
+}
+
+function aplicarModoOscuro() {
+    if (modoOscuro) {
+        document.body.classList.add('dark-mode');
+        const icon = elementos.btnModoOscuro.querySelector('i');
+        const text = elementos.btnModoOscuro.querySelector('span');
+        icon.className = 'bi bi-sun-fill';
+        text.textContent = 'Modo Claro';
+    }
+}
+
+// === COMPARTIR CANCIONES ===
+function abrirModalCompartir() {
+    if (!cancionActual) return;
+    
+    elementos.compartirTitulo.textContent = cancionActual.titulo;
+    elementos.compartirArtista.textContent = cancionActual.artista;
+    
+    // Generar QR Code
+    generarQRCode(window.location.href + `?cancion=${cancionActual.id}`);
+    
+    abrirModal(elementos.modalCompartir);
+}
+
+function compartirWhatsApp() {
+    if (!cancionActual) return;
+    const texto = `🎵 *${cancionActual.titulo}*\n👤 ${cancionActual.artista}\n🎸 Tono: ${cancionActual.tono || 'N/A'}\n\n${window.location.href}?cancion=${cancionActual.id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+function compartirTelegram() {
+    if (!cancionActual) return;
+    const texto = `🎵 ${cancionActual.titulo}\n👤 ${cancionActual.artista}\n🎸 Tono: ${cancionActual.tono || 'N/A'}\n\n${window.location.href}?cancion=${cancionActual.id}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href + '?cancion=' + cancionActual.id)}&text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+function copiarEnlace() {
+    if (!cancionActual) return;
+    const enlace = `${window.location.href}?cancion=${cancionActual.id}`;
+    navigator.clipboard.writeText(enlace).then(() => {
+        showToast('Enlace copiado al portapapeles', 'success');
+    }).catch(() => {
+        showToast('Error al copiar enlace', 'error');
+    });
+}
+
+function generarQRCode(texto) {
+    // Implementación simple de QR Code usando canvas
+    const canvas = elementos.qrCanvas;
+    const ctx = canvas.getContext('2d');
+    canvas.width = 200;
+    canvas.height = 200;
+    
+    // Por ahora, mostrar un texto indicando que se necesita una librería externa
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 200, 200);
+    ctx.fillStyle = '#000';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('QR Code', 100, 90);
+    ctx.fillText('(Requiere librería', 100, 110);
+    ctx.fillText('externa)', 100, 125);
+}
+
+// === EXPORTAR/IMPORTAR ===
+function exportarJSON() {
+    const backup = {
+        version: '1.0',
+        fecha: new Date().toISOString(),
+        canciones: canciones,
+        favoritos: favoritos
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lcb-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Backup exportado exitosamente', 'success');
+}
+
+async function importarJSON() {
+    elementos.inputImportar.click();
+}
+
+function exportarPDF() {
+    showToast('Exportar a PDF - Función en desarrollo', 'info');
+    // Aquí se implementaría con una librería como jsPDF
 }
 
 // Mostrar/ocultar spinner de carga
@@ -210,6 +372,11 @@ function crearCardCancion(cancion) {
     card.className = 'song-card';
     card.onclick = () => mostrarCancion(cancion);
     
+    // Agregar clase si es favorito
+    if (esFavorito(cancion.id)) {
+        card.classList.add('favorito');
+    }
+    
     const tonoHtml = cancion.tono ? `<span class="tono">Tono: ${escapeHtml(cancion.tono)}</span>` : '';
     const bpmHtml = cancion.bpm ? `<span class="bpm-badge">♩ ${cancion.bpm} BPM</span>` : '';
     
@@ -229,6 +396,9 @@ function mostrarCancion(cancion) {
     elementos.verTitulo.textContent = cancion.titulo;
     elementos.verArtista.textContent = `${cancion.artista}`;
     actualizarVistaCancion();
+    
+    // Actualizar estado del botón favorito
+    actualizarBotonFavorito(cancion.id);
     
     // Guardar referencia para editar/eliminar
     elementos.btnEditarCancion.onclick = () => {
@@ -906,11 +1076,19 @@ elementos.searchType.addEventListener('change', (e) => {
     const placeholders = {
         'titulo': 'Buscar por título o artista...',
         'tono': 'Buscar por tonalidad (Ej: Am, G, C)',
-        'tematica': 'Buscar por temática (Ej: adoración)'
+        'tematica': 'Buscar por temática (Ej: adoración)',
+        'favoritos': '⭐ Mostrando favoritas'
     };
     elementos.inputBuscar.placeholder = placeholders[e.target.value];
-    elementos.inputBuscar.value = '';
-    renderizarCanciones();
+    
+    // Si cambiamos a favoritos, disparar búsqueda automática
+    if (e.target.value === 'favoritos') {
+        elementos.inputBuscar.value = '';
+        elementos.inputBuscar.dispatchEvent(new Event('input'));
+    } else {
+        elementos.inputBuscar.value = '';
+        renderizarCanciones();
+    }
 });
 
 // Buscador en tiempo real unificado
@@ -918,7 +1096,7 @@ elementos.inputBuscar.addEventListener('input', (e) => {
     const searchValue = e.target.value.trim();
     const searchType = elementos.searchType.value;
     
-    if (!searchValue) {
+    if (!searchValue && searchType !== 'favoritos') {
         renderizarCanciones();
         return;
     }
@@ -951,6 +1129,9 @@ elementos.inputBuscar.addEventListener('input', (e) => {
                 }
                 return false;
             });
+            break;
+        case 'favoritos':
+            filtradas = canciones.filter(c => esFavorito(c.id));
             break;
     }
     
@@ -1099,6 +1280,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function inicializarApp() {
     console.log('Firebase conectado. Iniciando app...');
     
+    // Aplicar modo oscuro si está activado
+    aplicarModoOscuro();
+    
     // Opcional: Migrar canciones del localStorage a Firestore (solo la primera vez)
     // Descomenta estas líneas si quieres migrar canciones existentes:
     // if (localStorage.getItem('canciones')) {
@@ -1164,7 +1348,108 @@ async function inicializarApp() {
             if (tab === 'letra') document.getElementById('verLetra').classList.add('active');
         });
     });
+    
+    // === EVENT LISTENERS DE NUEVAS FUNCIONALIDADES ===
+    
+    // Sistema de Favoritos
+    elementos.btnFavorito.addEventListener('click', () => {
+        if (cancionActual) {
+            toggleFavorito(cancionActual.id);
+            actualizarBotonFavorito(cancionActual.id);
+            renderizarCanciones(); // Actualizar cards con estrella
+        }
+    });
+    
+    // Modo Oscuro
+    elementos.btnModoOscuro.addEventListener('click', toggleModoOscuro);
+    
+    // Sistema de Compartir
+    elementos.btnCompartir.addEventListener('click', () => {
+        if (cancionActual) {
+            abrirModalCompartir();
+        }
+    });
+    
+    elementos.btnCompartirWhatsApp.addEventListener('click', compartirWhatsApp);
+    elementos.btnCompartirTelegram.addEventListener('click', compartirTelegram);
+    elementos.btnCopiarEnlace.addEventListener('click', copiarEnlace);
+    
+    elementos.btnCerrarModalCompartir.addEventListener('click', () => {
+        cerrarModal(elementos.modalCompartir);
+    });
+    
+    elementos.modalCompartir.addEventListener('click', (e) => {
+        if (e.target === elementos.modalCompartir) {
+            cerrarModal(elementos.modalCompartir);
+        }
+    });
+    
+    // Sistema de Exportar/Importar
+    elementos.btnExportar.addEventListener('click', () => {
+        abrirModal(elementos.modalExportar);
+    });
+    
+    elementos.btnExportarJSON.addEventListener('click', exportarJSON);
+    
+    elementos.btnExportarPDF.addEventListener('click', () => {
+        exportarPDF();
+        mostrarToast('Exportación a PDF próximamente disponible', 'info');
+    });
+    
+    elementos.btnImportar.addEventListener('click', () => {
+        elementos.inputImportar.click();
+    });
+    
+    elementos.inputImportar.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.name.endsWith('.json')) {
+            mostrarToast('Por favor, selecciona un archivo JSON', 'error');
+            return;
+        }
+        
+        try {
+            const text = await file.text();
+            const backup = JSON.parse(text);
+            
+            if (!backup.canciones || !Array.isArray(backup.canciones)) {
+                mostrarToast('Formato de backup inválido', 'error');
+                return;
+            }
+            
+            let importadas = 0;
+            for (const cancion of backup.canciones) {
+                try {
+                    await agregarCancionFirestore(cancion);
+                    importadas++;
+                } catch (error) {
+                    console.error('Error al importar canción:', error);
+                }
+            }
+            
+            mostrarToast(`✅ ${importadas} canciones importadas exitosamente`, 'success');
+            cerrarModal(elementos.modalExportar);
+            
+        } catch (error) {
+            console.error('Error al importar:', error);
+            mostrarToast('Error al leer el archivo', 'error');
+        } finally {
+            e.target.value = '';
+        }
+    });
+    
+    elementos.btnCerrarModalExportar.addEventListener('click', () => {
+        cerrarModal(elementos.modalExportar);
+    });
+    
+    elementos.modalExportar.addEventListener('click', (e) => {
+        if (e.target === elementos.modalExportar) {
+            cerrarModal(elementos.modalExportar);
+        }
+    });
 }
+
 // Cleanup al cerrar/recargar la página para prevenir memory leaks
 window.addEventListener('beforeunload', () => {
     if (unsubscribeListener) {

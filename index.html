@@ -38,6 +38,9 @@
         <div class="container">
             <h1 class="logo">LCB WORSHIP</h1>
             <nav class="nav">
+                <button id="btnExportar" class="btn btn-secondary" title="Exportar/Importar" aria-label="Exportar e importar canciones">
+                    <i class="bi bi-download"></i>
+                </button>
                 <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
                 <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos" aria-label="Abrir panel de eventos y cronogramas">☰</button>
             </nav>
@@ -54,6 +57,7 @@
                         <option value="titulo">Título/Artista</option>
                         <option value="tono">Tonalidad</option>
                         <option value="tematica">Temática</option>
+                        <option value="favoritos">⭐ Favoritas</option>
                     </select>
                     <input 
                         type="text" 
@@ -61,6 +65,12 @@
                         class="search-input main-search" 
                         placeholder="Buscar por título o artista..."
                     >
+                </div>
+                <div style="margin-top: 10px;">
+                    <button id="btnModoOscuro" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-moon-fill"></i>
+                        <span>Modo Oscuro</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -161,6 +171,12 @@
                         <p class="artista-info" id="verArtista"></p>
                     </div>
                     <div class="song-actions-inline">
+                        <button id="btnFavorito" class="btn btn-sm btn-outline-warning btn-favorito" title="Favorito" aria-label="Marcar como favorito">
+                            <i class="bi bi-star" aria-hidden="true"></i>
+                        </button>
+                        <button id="btnCompartir" class="btn btn-sm btn-outline-info btn-share" title="Compartir" aria-label="Compartir canción">
+                            <i class="bi bi-share" aria-hidden="true"></i>
+                        </button>
                         <button id="btnEditarCancion" class="btn btn-sm btn-outline-primary btn-select" title="Editar">
                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
                         </button>
@@ -294,6 +310,65 @@
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" id="btnCancelarEvento">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarEvento">Guardar Evento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Exportar/Importar -->
+    <div id="modalExportar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Exportar / Importar</h2>
+                <button class="btn-cerrar" id="btnCerrarModalExportar" aria-label="Cerrar modal exportar">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <h3>Exportar</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+                    <button id="btnExportarPDF" class="btn btn-primary">
+                        <i class="bi bi-file-pdf"></i> Exportar a PDF
+                    </button>
+                    <button id="btnExportarJSON" class="btn btn-secondary">
+                        <i class="bi bi-filetype-json"></i> Exportar a JSON (Backup)
+                    </button>
+                </div>
+                <h3>Importar</h3>
+                <div>
+                    <input type="file" id="inputImportar" accept=".json,.txt" style="display: none;">
+                    <button id="btnImportar" class="btn btn-secondary">
+                        <i class="bi bi-upload"></i> Importar desde JSON/TXT
+                    </button>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 10px;">
+                        Soporta archivos JSON con el formato de backup
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Compartir -->
+    <div id="modalCompartir" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Compartir Canción</h2>
+                <button class="btn-cerrar" id="btnCerrarModalCompartir" aria-label="Cerrar modal compartir">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p><strong id="compartirTitulo"></strong></p>
+                <p style="color: #666;" id="compartirArtista"></p>
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="btnCompartirWhatsApp" class="btn btn-primary" style="background: #25D366;">
+                        <i class="bi bi-whatsapp"></i> Compartir por WhatsApp
+                    </button>
+                    <button id="btnCompartirTelegram" class="btn btn-primary" style="background: #0088cc;">
+                        <i class="bi bi-telegram"></i> Compartir por Telegram
+                    </button>
+                    <button id="btnCopiarEnlace" class="btn btn-secondary">
+                        <i class="bi bi-link-45deg"></i> Copiar Enlace
+                    </button>
+                    <div id="qrCodeContainer" style="margin-top: 20px; text-align: center;">
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
