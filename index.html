@@ -39,7 +39,7 @@
             <h1 class="logo">LCB WORSHIP</h1>
             <nav class="nav">
                 <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
-                <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos">☰</button>
+                <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos" aria-label="Abrir panel de eventos y cronogramas">☰</button>
             </nav>
         </div>
     </header>
@@ -91,7 +91,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitulo">Agregar Canción</h2>
-                <button class="btn-cerrar" id="btnCerrarModal">&times;</button>
+                <button class="btn-cerrar" id="btnCerrarModal" aria-label="Cerrar modal">&times;</button>
             </div>
             <form id="formCancion" class="form">
                 <div class="form-group">
@@ -169,7 +169,7 @@
                         </button>
                     </div>
                 </div>
-                <button class="btn-cerrar" id="btnCerrarModalVer">&times;</button>
+                <button class="btn-cerrar" id="btnCerrarModalVer" aria-label="Cerrar modal de canción">&times;</button>
             </div>
             <div class="transpose-section">
                 <div class="tono-info" id="verTono"></div>
@@ -198,7 +198,7 @@
         <div class="modal-content modal-large">
             <div class="modal-header modal-header-playlist">
                 <h2 id="modalPlaylistTitulo">Gestionar Cronograma</h2>
-                <button class="btn-cerrar" id="btnCerrarModalPlaylist">&times;</button>
+                <button class="btn-cerrar" id="btnCerrarModalPlaylist" aria-label="Cerrar modal de cronograma">&times;</button>
             </div>
             
             <div class="form-group">
@@ -248,7 +248,7 @@
         <div class="modal-content modal-large">
             <div class="modal-header modal-header-evento">
                 <h2 id="modalEventoTitulo">Gestionar Evento</h2>
-                <button class="btn-cerrar" id="btnCerrarModalEvento">&times;</button>
+                <button class="btn-cerrar" id="btnCerrarModalEvento" aria-label="Cerrar modal de evento">&times;</button>
             </div>
             
             <div class="form-group">
@@ -303,7 +303,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Seleccionar Canciones</h2>
-                <button class="btn-cerrar" id="btnCerrarModalSeleccion">&times;</button>
+                <button class="btn-cerrar" id="btnCerrarModalSeleccion" aria-label="Cerrar selección de canciones">&times;</button>
             </div>
             <div class="search-container">
                 <input type="text" id="buscarCancionModal" placeholder="Buscar canción..." class="search-input">
@@ -321,7 +321,7 @@
         <aside class="panel-side" id="panelSide">
             <div class="panel-header-mobile">
                 <h3>Eventos y Cronogramas</h3>
-                <button id="btnCerrarPanel" class="btn-cerrar-panel">✕</button>
+                <button id="btnCerrarPanel" class="btn-cerrar-panel" aria-label="Cerrar panel lateral">✕</button>
             </div>
 
             <div class="panel-block">

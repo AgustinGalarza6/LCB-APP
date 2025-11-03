@@ -820,8 +820,8 @@ async function eliminarCancion(id) {
 function editarCancion(cancion) {
     cancionEditando = cancion;
     elementos.modalTitulo.textContent = 'Editar Canción';
-    elementos.inputTitulo.value = cancion.titulo;
-    elementos.inputArtista.value = cancion.artista;
+    elementos.inputTitulo.value = cancion.titulo || '';
+    elementos.inputArtista.value = cancion.artista || '';
     elementos.inputTono.value = cancion.tono || '';
     elementos.inputBpm.value = cancion.bpm || '';
     elementos.inputAcordes.value = cancion.acordes || '';
@@ -1165,3 +1165,10 @@ async function inicializarApp() {
         });
     });
 }
+// Cleanup al cerrar/recargar la página para prevenir memory leaks
+window.addEventListener('beforeunload', () => {
+    if (unsubscribeListener) {
+        unsubscribeListener();
+        console.log('Listener de Firebase desconectado');
+    }
+});

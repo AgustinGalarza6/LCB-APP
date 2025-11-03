@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas para la colección de canciones
+    match /canciones/{cancionId} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir escritura solo desde tu dominio (ajusta según necesites)
+      // Por ahora permitimos escritura para desarrollo
+      allow write: if true;
+      
+      // PRODUCCIÓN: Descomentar y ajustar cuando tengas autenticación
+      // allow write: if request.auth != null;
+    }
+    
+    // Reglas para eventos
+    match /eventos/{eventoId} {
+      allow read: if true;
+      allow write: if true;
+      // PRODUCCIÓN: allow write: if request.auth != null;
+    }
+    
+    // Reglas para playlists/cronogramas
+    match /playlists/{playlistId} {
+      allow read: if true;
+      allow write: if true;
+      // PRODUCCIÓN: allow write: if request.auth != null;
+    }
+  }
+}
+
+// INSTRUCCIONES DE IMPLEMENTACIÓN:
+// 1. Ve a Firebase Console: https://console.firebase.google.com/
+// 2. Selecciona tu proyecto "lcb-cancionero"
+// 3. En el menú lateral, ve a "Firestore Database"
+// 4. Click en la pestaña "Rules" (Reglas)
+// 5. Copia y pega estas reglas
+// 6. Click en "Publish" (Publicar)
+//
+// NOTA: La API key expuesta en el código es normal para Firebase Web,
+// la seguridad real se maneja con estas reglas de Firestore.
