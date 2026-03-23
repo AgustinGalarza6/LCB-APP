@@ -4,8 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LCB WORSHIP</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#b6a0ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Error registro SW', err));
+            });
+        }
+    </script>
     
     <!-- Firebase SDK -->
     <script type="module">
@@ -33,28 +53,31 @@
     </script>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <h1 class="logo">LCB WORSHIP</h1>
             <nav class="nav">
-                <button id="btnModoOscuro" class="btn btn-icon btn-theme-toggle" title="Modo Oscuro" aria-label="Cambiar a modo oscuro">
+                <button id="btnVerFavoritos" class="btn btn-secondary btn-icon" title="Favoritos">
+                    <i class="bi bi-star"></i>
+                    <span class="favoritos-badge" id="favoritosBadge" style="display: none;">0</span>
+                </button>
+                <button id="btnModoOscuro" class="btn btn-secondary btn-icon" title="Cambiar Tema">
                     <i class="bi bi-moon-fill"></i>
                 </button>
-                <button id="btnVerFavoritos" class="btn btn-favoritos-header" title="Ver mis favoritas">
-                    <i class="bi bi-star-fill"></i>
-                    <span class="favoritos-badge" id="favoritosBadge">0</span>
+                <button id="btnAgregarCancion" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Nueva Canción
                 </button>
-                <button id="btnAgregarCancion" class="btn btn-primary">+ Agregar Canción</button>
-                <button id="btnTogglePanel" class="btn btn-icon" title="Filtros y Eventos" aria-label="Abrir panel de eventos y cronogramas">☰</button>
+                <button id="btnTogglePanel" class="btn btn-secondary btn-icon" title="Menu">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                </button>
             </nav>
         </div>
     </header>
 
-    <!-- Buscador y Filtros -->
     <section class="search-section" id="searchSection">
         <div class="container">
-            <h3 class="search-title" id="searchTitleMain">Buscar Canciones</h3>
+            <h1 class="search-title" id="searchTitleMain">Explora el Repertorio</h1>
+            <p style="text-align: center; color: var(--on-surface-variant); margin-bottom: 30px; margin-top: -20px;">Busca tus canciones favoritas por título, tono o temática.</p>
             <div class="search-filters-container">
                 <div class="search-with-select">
                     <select id="searchType" class="search-select">
@@ -66,7 +89,7 @@
                         type="text" 
                         id="inputBuscar" 
                         class="search-input main-search" 
-                        placeholder="Buscar por título o artista..."
+                        placeholder="Buscar canción..."
                     >
                 </div>
             </div>

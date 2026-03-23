@@ -1,0 +1,13 @@
+{
+  "name": "lcb-worship",
+  "version": "1.0.0",
+  "description": "App para la banda de música LCB",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve ."
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+}

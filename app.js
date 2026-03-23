@@ -220,13 +220,14 @@ function toggleVistaFavoritos() {
     
     // Toggle clase en botón
     elementos.btnVerFavoritos.classList.toggle('active', vistaFavoritosActiva);
+    elementos.btnVerFavoritos.querySelector('i').className = vistaFavoritosActiva ? 'bi bi-star-fill' : 'bi bi-star';
     
     // Toggle clase en search section
     elementos.searchSection.classList.toggle('favoritos-view', vistaFavoritosActiva);
     
     if (vistaFavoritosActiva) {
         // Cambiar título
-        elementos.searchTitleMain.innerHTML = '<span class="favoritos-icon">⭐</span> Mis Canciones Favoritas';
+        elementos.searchTitleMain.innerHTML = '<i class="bi bi-star-fill" style="color: var(--tertiary);"></i> Mis Favoritos';
         
         // Ocultar controles de búsqueda
         elementos.searchType.parentElement.style.display = 'none';
@@ -235,7 +236,7 @@ function toggleVistaFavoritos() {
         elementos.inputBuscar.value = '';
     } else {
         // Restaurar título
-        elementos.searchTitleMain.textContent = 'Buscar Canciones';
+        elementos.searchTitleMain.textContent = 'Explora el Repertorio';
         
         // Mostrar controles de búsqueda
         elementos.searchType.parentElement.style.display = 'flex';
@@ -441,23 +442,30 @@ function renderizarCanciones(filtro = '') {
 
 function crearCardCancion(cancion) {
     const card = document.createElement('div');
-    card.className = 'song-card';
-    card.onclick = () => mostrarCancion(cancion);
-    
-    // Agregar clase si es favorito
-    if (esFavorito(cancion.id)) {
-        card.classList.add('favorito');
-    }
-    
-    const tonoHtml = cancion.tono ? `<span class="tono">Tono: ${escapeHtml(cancion.tono)}</span>` : '';
-    const bpmHtml = cancion.bpm ? `<span class="bpm-badge">♩ ${cancion.bpm} BPM</span>` : '';
-    
+    card.className = 'song-grid-item'; // Updated class
     card.innerHTML = `
-        <h3>${escapeHtml(cancion.titulo)}</h3>
-        <p class="artista">${escapeHtml(cancion.artista)}</p>
-        <div>${tonoHtml}${bpmHtml}</div>
+        <div class="song-card fade-in" onclick="mostrarCancionActual('${cancion.id}')">
+            ${esFavorito(cancion.id) ? '<div class="favoritos-badge"><i class="bi bi-star-fill"></i></div>' : ''}
+            <div class="song-card-content">
+                <h3>${escapeHtml(cancion.titulo)}</h3>
+                <p class="artista">${escapeHtml(cancion.artista)}</p>
+                <div class="badges">
+                    ${cancion.tono ? `<span class="tono">${escapeHtml(cancion.tono)}</span>` : ''}
+                    ${cancion.bpm ? `<span class="bpm-badge"><i class="bi bi-metronome"></i> ${cancion.bpm}</span>` : ''}
+                </div>
+            </div>
+            <div class="song-card-hover-info">
+                <span>Ver detalles <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </div>
     `;
     
+    // Helper function for onclick mapping
+    window.mostrarCancionActual = (id) => {
+        const c = canciones.find(item => item.id === id);
+        if (c) mostrarCancion(c);
+    };
+
     return card;
 }
 
@@ -496,20 +504,21 @@ function actualizarVistaCancion() {
     
     let tonoTexto = '';
     if (tonoTranspuesto) {
-        tonoTexto = transposicion === 0 
-            ? `Tonalidad: ${tonoTranspuesto}` 
-            : `Tonalidad: ${tonoTranspuesto} (Original: ${tonoOriginal})`;
+        tonoTexto = `
+            <div class="badges">
+                <span class="tono">${tonoTranspuesto}</span>
+                ${transposicion !== 0 ? `<small style="color: var(--on-surface-variant); font-size: 0.8rem; margin-left: 8px;">(Original: ${tonoOriginal})</small>` : ''}
+                ${cancionActual.bpm ? `<span class="bpm-badge"><i class="bi bi-metronome"></i> ${cancionActual.bpm} BPM</span>` : ''}
+            </div>
+        `;
         
         // Sugerencia de capo
         if (transposicion < 0) {
             const capoPos = Math.abs(transposicion);
-            tonoTexto += ` <span class="capo-suggestion">💡 Capo en traste ${capoPos}</span>`;
+            tonoTexto += ` <div class="capo-suggestion"><i class="bi bi-info-circle"></i> Coloca el Capo en el traste <strong>${capoPos}</strong> para tocar en el tono original.</div>`;
         }
-    }
-    
-    // Agregar BPM si existe
-    if (cancionActual.bpm) {
-        tonoTexto += ` <span class="bpm-badge">♩ ${cancionActual.bpm} BPM</span>`;
+    } else if (cancionActual.bpm) {
+        tonoTexto = `<div class="badges"><span class="bpm-badge"><i class="bi bi-metronome"></i> ${cancionActual.bpm} BPM</span></div>`;
     }
     
     elementos.verTono.innerHTML = tonoTexto;
@@ -814,34 +823,45 @@ async function cargarYMostrarEventos() {
         const eventos = await obtenerEventos();
         elementos.listaEventos.innerHTML = '';
         if (eventos.length === 0) {
-            elementos.listaEventos.innerHTML = '<small>No hay eventos</small>';
+            elementos.listaEventos.innerHTML = '<div class="mensaje-vacio-mini">No hay eventos</div>';
             return;
         }
         eventos.forEach(ev => {
             const el = document.createElement('div');
-            el.className = 'evento-item';
+            el.className = 'panel-item fade-in';
             const fechaFormateada = formatearFecha(ev.fecha);
-            el.textContent = `${ev.nombre} - ${fechaFormateada}`;
+            el.innerHTML = `
+                <div class="panel-item-icon"><i class="bi bi-calendar-event"></i></div>
+                <div class="panel-item-info">
+                    <strong>${escapeHtml(ev.nombre)}</strong>
+                    <small>${fechaFormateada}</small>
+                </div>
+            `;
             el.addEventListener('click', () => abrirEvento(ev));
             elementos.listaEventos.appendChild(el);
         });
     } catch (err) { console.error('cargarYMostrarEventos', err); }
 }
 
-// Playlists: crear y listar
 async function cargarYMostrarPlaylists() {
     try {
         const pls = await obtenerPlaylists();
         elementos.listaPlaylists.innerHTML = '';
         if (pls.length === 0) {
-            elementos.listaPlaylists.innerHTML = '<small>No hay playlists</small>';
+            elementos.listaPlaylists.innerHTML = '<div class="mensaje-vacio-mini">No hay cronogramas</div>';
             return;
         }
         pls.forEach(pl => {
             const el = document.createElement('div');
-            el.className = 'playlist-item';
+            el.className = 'panel-item fade-in';
             const fechaFormateada = formatearFecha(pl.fecha);
-            el.textContent = `${pl.nombre} - ${fechaFormateada}`;
+            el.innerHTML = `
+                <div class="panel-item-icon"><i class="bi bi-music-note-list"></i></div>
+                <div class="panel-item-info">
+                    <strong>${escapeHtml(pl.nombre)}</strong>
+                    <small>${fechaFormateada}</small>
+                </div>
+            `;
             el.addEventListener('click', () => abrirPlaylist(pl));
             elementos.listaPlaylists.appendChild(el);
         });
